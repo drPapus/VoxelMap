@@ -70,10 +70,9 @@ export class VoxelLandscape {
       for (const {side, dir, corners} of this.voxel.faces) {
         if (
           // Пропускаем верхние фейсы
-          // ['tt', 'tb'].includes(side)
+          ['tt', 'tb'].includes(side)
           // Есть сосед - не рисуем грань
-          // || this.isNeighbor(
-          this.isNeighbor(
+          || this.isNeighbor(
             x + dir[0],
             z + dir[2] - ('acdf'.includes(side) ? x % 2 : 0)
           )
@@ -85,7 +84,7 @@ export class VoxelLandscape {
           this.attributes.positions.push(
             pos[0] + x * this.voxel.height - (x * this.voxel.size / 2),
             pos[1],
-            pos[2] + z * this.voxel.width - (x % 2 * (this.voxel.width / 2)),
+            pos[2] + z * -this.voxel.width - (x % 2 * (this.voxel.width / 2)),
           );
           this.attributes.normals.push(...dir)
         }

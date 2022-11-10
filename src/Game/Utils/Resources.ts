@@ -4,12 +4,12 @@ import {
   TextureLoader,
   DataTexture,
   EventDispatcher
-} from 'three'
-import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader'
+} from 'three';
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 
-import {SourceInterface} from "../@types/SourceInterface"
-import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
+import {SourceInterface} from '../@types/SourceInterface';
+import {GLTF} from 'three/examples/jsm/loaders/GLTFLoader';
 
 
 export default class Resources extends EventDispatcher {
@@ -17,24 +17,24 @@ export default class Resources extends EventDispatcher {
     textureLoader: TextureLoader,
     RGBELoader: RGBELoader,
     gltfLoader: GLTFLoader
-  }
-  sources: SourceInterface[]
-  items: Record<string, Texture | GLTF>
-  toLoad: number
-  loaded: number
+  };
+  sources: SourceInterface[];
+  items: Record<string, Texture | GLTF>;
+  toLoad: number;
+  loaded: number;
 
 
   constructor(sources: SourceInterface[]) {
-    super()
+    super();
 
-    this.sources = sources
+    this.sources = sources;
 
-    this.items = {}
-    this.toLoad = this.sources.length
-    this.loaded = 0
+    this.items = {};
+    this.toLoad = this.sources.length;
+    this.loaded = 0;
 
-    this.setLoaders()
-    this.startLoading()
+    this.setLoaders();
+    this.startLoading();
   }
 
 
@@ -43,8 +43,8 @@ export default class Resources extends EventDispatcher {
       textureLoader: new TextureLoader(),
       RGBELoader: new RGBELoader(),
       gltfLoader: new GLTFLoader()
-    }
-    this.loaders.RGBELoader.setDataType(FloatType)
+    };
+    this.loaders.RGBELoader.setDataType(FloatType);
     // this.loaders.cubeTextureLoader = new THREE.CubeTextureLoader()
   }
 
@@ -56,38 +56,38 @@ export default class Resources extends EventDispatcher {
           this.loaders.textureLoader.load(
             source.path,
             (file: Texture) => {
-              this.sourceLoaded(source.name, file)
+              this.sourceLoaded(source.name, file);
             }
-          )
-          break
+          );
+          break;
         case 'envMapTexture':
           this.loaders.RGBELoader.load(
             source.path,
             (file: DataTexture) => {
-              this.sourceLoaded(source.name, file)
+              this.sourceLoaded(source.name, file);
             }
-          )
-          break
+          );
+          break;
         case 'glb':
           this.loaders.gltfLoader.load(
             source.path,
             (file: any) => {
-              this.sourceLoaded(source.name, file)
+              this.sourceLoaded(source.name, file);
             }
-          )
-          break
+          );
+          break;
       }
     }
   }
 
 
   sourceLoaded(sourceName: string, file: Texture | DataTexture) {
-    this.items[sourceName] = file
+    this.items[sourceName] = file;
 
-    this.loaded++
+    this.loaded++;
 
     if (this.loaded === this.toLoad) {
-      this.dispatchEvent({type: 'ready'})
+      this.dispatchEvent({type: 'ready'});
     }
   }
 }

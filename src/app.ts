@@ -1,3 +1,4 @@
-import Main from './Game/Main'
+import Main from './Game/Main';
 
-const experience = new Main(document.querySelector('canvas.webgl')!)
+// tslint:disable-next-line:no-non-null-assertion
+const main = new Main(document.querySelector('canvas.webgl')!);

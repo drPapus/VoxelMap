@@ -1,4 +1,4 @@
-import {FaceInterface} from "../../@types/FaceInterface"
+import {FaceInterface} from '../../@types/FaceInterface';
 
 /*
 
@@ -34,21 +34,19 @@ https://www.redblobgames.com/grids/hexagons/
 
 export default (size: number, depth: number = 1, face?: 'top'): FaceInterface[] => {
   // Size
-  const s = size
+  const s = size;
   // 1/2 size
-  const s12 = size / 2
+  const s12 = size / 2;
   // Width
-  const w = s * Math.sqrt(3)
+  const w = s * Math.sqrt(3);
   // 1/2 width
-  const w12 = w / 2
-  // Height
-  const h = s * 2
+  const w12 = w / 2;
   // Depth
-  const d = depth
+  const d = depth;
 
   const faces: FaceInterface[] = [
     // BOTTOM =================================================================
-    { // left
+    { // top
       side: 'bt',
       dir: [0, -1, 0],
       corners: [
@@ -58,8 +56,8 @@ export default (size: number, depth: number = 1, face?: 'top'): FaceInterface[] 
         [s, 0, 0],
       ]
     },
-    { // right
-      side: 'bl',
+    { // bottom
+      side: 'bb',
       dir: [0, -1,  0],
       corners: [
         [-s12, 0, w12],
@@ -104,7 +102,7 @@ export default (size: number, depth: number = 1, face?: 'top'): FaceInterface[] 
     },
     { // B
       side: 'b',
-      dir: [0, 0, -1],
+      dir: [0, 0, 1],
       corners: [
         [-s12, 0, -w12],
         [-s12, d, -w12],
@@ -124,7 +122,7 @@ export default (size: number, depth: number = 1, face?: 'top'): FaceInterface[] 
     },
     { // D
       side: 'd',
-      dir: [1, 0, 1],
+      dir: [1, 0, -1],
       corners: [
         [s, 0, 0],
         [s, d, 0],
@@ -134,7 +132,7 @@ export default (size: number, depth: number = 1, face?: 'top'): FaceInterface[] 
     },
     { // E
       side: 'e',
-      dir: [ 0, 0, 1],
+      dir: [ 0, 0, -1],
       corners: [
         [-s12, 0, w12],
         [s12, 0, w12],
@@ -144,7 +142,7 @@ export default (size: number, depth: number = 1, face?: 'top'): FaceInterface[] 
     },
     { // F
       side: 'f',
-      dir: [-1, 0, 1],
+      dir: [-1, 0, -1],
       corners: [
         [-s, 0, 0],
         [-s12, 0, w12],
@@ -152,14 +150,14 @@ export default (size: number, depth: number = 1, face?: 'top'): FaceInterface[] 
         [-s12, d, w12],
       ],
     },
-  ]
+  ];
 
   switch (face) {
     case 'top':
       return faces.filter(face => {
-        return ['tt', 'tb'].includes(face.side)
-      })
+        return ['tt', 'tb'].includes(face.side);
+      });
     default:
-      return faces
+      return faces;
   }
-}
+};

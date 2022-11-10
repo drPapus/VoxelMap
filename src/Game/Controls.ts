@@ -1,14 +1,14 @@
-import SelectionVoxel from "./Controls/SelectionVoxel"
+import SelectionVoxel from './Controls/SelectionVoxel';
 
 
 export default class Controls {
-  selectionVoxel: SelectionVoxel
+  selectionVoxel: SelectionVoxel;
 
   constructor() {
-    this.selectionVoxel = new SelectionVoxel()
+    this.selectionVoxel = new SelectionVoxel();
   }
 
   update() {
-    this.selectionVoxel.update()
+    this.selectionVoxel.update();
   }
 }

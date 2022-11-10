@@ -1,4 +1,4 @@
-import {BufferGeometry, Mesh} from "three";
+import {BufferGeometry, Mesh} from 'three';
 
 export interface LandCellInterface {
   /*
@@ -14,11 +14,11 @@ export interface LandCellInterface {
   index: {
     cell?: number, // x
     row?: number, // y
-  }
+  };
   position: {
     x: number,
     y: number,
     z: number
-  }
-  mesh: Mesh
+  };
+  mesh: Mesh;
 }

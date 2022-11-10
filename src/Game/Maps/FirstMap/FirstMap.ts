@@ -1,7 +1,7 @@
-import {MapInterface} from "../../@types/MapInterface"
-import {getGeography} from "../../../mocks/geography";
+import {MapInterface} from '../../@types/Map';
+import {getGeography} from '../../World/State/MapHelpers';
 
-export default <MapInterface> {
+export default {
   name: 'Map 1',
   sea: {
     color: '#424d7c',
@@ -19,4 +19,4 @@ export default <MapInterface> {
     },
   },
   states: [...getGeography()],
-}
+} as MapInterface;

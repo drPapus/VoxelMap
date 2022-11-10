@@ -1,5 +1,5 @@
 export interface SourceInterface {
-  name: string,
-  type: string,
-  path: string
+  name: string;
+  type: string;
+  path: string;
 }

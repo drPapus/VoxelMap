@@ -1,41 +1,31 @@
 import {
   EventDispatcher,
   Clock
-} from "three"
+} from 'three';
 
 export default class Time extends EventDispatcher {
-  clock: Clock
-  // start: number
-  // current: number
-  elapsed: number
-  // delta: number
+  clock: Clock;
+  elapsed: number;
 
   constructor() {
-    super()
+    super();
 
     // Setup
-    this.clock = new Clock()
-    // this.start = Date.now()
-    // this.current = this.start
-    this.elapsed = 0
-    // this.delta = 16
+    this.clock = new Clock();
+    this.elapsed = 0;
 
     window.requestAnimationFrame(() => {
-      this.tick()
-    })
+      this.tick();
+    });
   }
 
   tick() {
-    // const currentTime = Date.now()
-    // this.delta = currentTime - this.current
-    // this.current = currentTime
-    // this.elapsed = this.current - this.start
-    this.elapsed = this.clock.getElapsedTime()
+    this.elapsed = this.clock.getElapsedTime();
 
-    this.dispatchEvent({type: 'tick'})
+    this.dispatchEvent({type: 'tick'});
 
     window.requestAnimationFrame(() => {
-      this.tick()
-    })
+      this.tick();
+    });
   }
 }

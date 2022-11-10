@@ -1,7 +1,11 @@
-import {StateInterface} from "./StateInterface"
+import {StateInterface} from './State';
+
+
+export type Tiles = Uint32Array;
+
 
 export interface MapInterface {
-  name: string,
+  name: string;
   sea: {
     color: string | number,
     material: {
@@ -21,6 +25,6 @@ export interface MapInterface {
       y: number,
       z: number,
     }
-  },
-  states: StateInterface[]
+  };
+  states: StateInterface[];
 }

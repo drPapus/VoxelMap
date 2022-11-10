@@ -2,8 +2,9 @@
    "compilerOptions": {
      "moduleResolution": "node",
      "strict": true,
-     "target": "ES6",
-     "allowSyntheticDefaultImports": true
+     "target": "es2020",
+     "allowSyntheticDefaultImports": true,
+     "resolveJsonModule": true
    },
   "include": ["src/**/*.ts"]
  }

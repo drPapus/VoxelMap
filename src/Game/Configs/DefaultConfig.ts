@@ -1,6 +1,6 @@
-import {ConfigInterface} from "../@types/ConfigInterface"
+import {ConfigInterface} from '../@types/ConfigInterface';
 
-export default <ConfigInterface> {
+export default {
   camera: {
     position: {
       x: 0,
@@ -47,4 +47,4 @@ export default <ConfigInterface> {
       ],
     },
   },
-}
+} as ConfigInterface;

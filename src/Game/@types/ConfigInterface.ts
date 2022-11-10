@@ -1,4 +1,4 @@
-import {ColorRepresentation} from "three"
+import {ColorRepresentation} from 'three';
 
 export interface ConfigInterface {
   camera: {
@@ -7,7 +7,7 @@ export interface ConfigInterface {
       y: number,
       z: number,
     }
-  }
+  };
   environment: {
     light: {
       intensity: number,
@@ -22,7 +22,7 @@ export interface ConfigInterface {
       shadowCameraNear: number,
       shadowCameraFar: number,
     }
-  },
+  };
   world: {
     hoverEmisseve: ColorRepresentation,
     hoverEmisseveIntensity: number,
@@ -39,5 +39,5 @@ export interface ConfigInterface {
       sideColor: ColorRepresentation
       peakLevelColors: ColorRepresentation[]
     }
-  }
+  };
 }

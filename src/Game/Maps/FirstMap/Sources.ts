@@ -1,8 +1,8 @@
-import {SourceInterface} from "../../@types/SourceInterface";
+import {SourceInterface} from '../../@types/SourceInterface';
 
-const mapsPath = 'static/map'
-const mapFolder = '/first_map'
-const mapPath = `${mapsPath}${mapFolder}`
+const mapsPath = 'static/map';
+const mapFolder = '/first_map';
+const mapPath = `${mapsPath}${mapFolder}`;
 
 const Sources: SourceInterface[] = [
   // EnvMap
@@ -135,6 +135,6 @@ const Sources: SourceInterface[] = [
   //   type: 'glb',
   //   path: `${mapPath}/settlements/settlement_sieged.glb`
   // },
-]
+];
 
-export default Sources
+export default Sources;

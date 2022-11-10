@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Mesh,
   InstancedMesh,
@@ -15,7 +16,7 @@ import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js'
 
 import Main from "../../Main"
-import {StateInterface} from "../../@types/StateInterface"
+import {State} from "../../@types/StateInterface"
 import Peaks from "./Peaks"
 
 
@@ -26,7 +27,7 @@ export default class Mountains {
   config: Main['config']
   // textures!: Record<string, any>
   mountainModel!: GLTF
-  stateStatus: StateInterface['status']
+  stateStatus: State['status']
   peaks: Peaks
   mountainObj: Mesh
   mesh!: Mesh
@@ -34,7 +35,7 @@ export default class Mountains {
   geometry!: BufferGeometry
 
 
-  constructor(peaks: Peaks, stateStatus: StateInterface['status']) {
+  constructor(peaks: Peaks, stateStatus: State['status']) {
     this.main = new Main()
     this.scene = this.main.scene
     this.config = this.main.config

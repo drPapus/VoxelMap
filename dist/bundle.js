@@ -3040,8 +3040,8 @@ __webpack_require__.r(__webpack_exports__);
             roughness: .5,
         },
         size: {
-            width: 80,
-            height: 100
+            width: 800,
+            height: 1000
         },
         segmentsQty: {
             width: 100,
@@ -3761,11 +3761,18 @@ class Sea {
     }
     setTextures() {
         this.textures = {};
-        // this.textures.test = this.resources.items.testTexture
         this.textures.map = this.resources.items.woodBaseColorTexture;
+        this.textures.map.wrapS = this.textures.map.wrapT = three__WEBPACK_IMPORTED_MODULE_1__.RepeatWrapping;
+        this.textures.map.repeat.set(48, 48);
         this.textures.normalMap = this.resources.items.woodNormalTexture;
+        this.textures.normalMap.wrapS = this.textures.normalMap.wrapT = three__WEBPACK_IMPORTED_MODULE_1__.RepeatWrapping;
+        this.textures.normalMap.repeat.set(48, 48);
         this.textures.roughnessMap = this.resources.items.woodRougMapTexture;
+        this.textures.roughnessMap.wrapS = this.textures.roughnessMap.wrapT = three__WEBPACK_IMPORTED_MODULE_1__.RepeatWrapping;
+        this.textures.roughnessMap.repeat.set(48, 48);
         this.textures.displacementMap = this.resources.items.woodHightMapTexture;
+        this.textures.displacementMap.wrapS = this.textures.displacementMap.wrapT = three__WEBPACK_IMPORTED_MODULE_1__.RepeatWrapping;
+        this.textures.displacementMap.repeat.set(48, 48);
     }
     setMaterial() {
         this.material = new three__WEBPACK_IMPORTED_MODULE_1__.MeshStandardMaterial();
@@ -3777,29 +3784,28 @@ class Sea {
         this.material.roughness = this.map.sea.material.roughness;
         this.material.color = new three__WEBPACK_IMPORTED_MODULE_1__.Color(this.map.sea.color);
     }
-    // setMesh() {
-    //   this.mesh = new Mesh(this.geometry, this.material);
-    //   this.mesh.rotation.x = -Math.PI * .5;
-    //   this.mesh.receiveShadow = true;
-    //   this.scene.add(this.mesh);
-    // }
     setMesh() {
-        let xDist = 79;
-        let zDist = 99;
-        let xOff = -160;
-        let zOff = -150;
-        for (var i = 0; i < 5; i++) {
-            for (var j = 0; j < 5; j++) {
-                this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Mesh(this.geometry, this.material);
-                this.mesh.position.x = xDist * i + xOff;
-                this.mesh.position.z = zDist * j + zOff;
-                this.mesh.rotation.x = -Math.PI * .5;
-                this.mesh.receiveShadow = true;
-                this.scene.add(this.mesh);
-            }
-        }
-        ;
+        this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Mesh(this.geometry, this.material);
+        this.mesh.rotation.x = -Math.PI * .5;
+        this.mesh.receiveShadow = true;
+        this.scene.add(this.mesh);
     }
+    // setMesh() {
+    //   let xDist = 79
+    //   let zDist = 99
+    //   let xOff = -160
+    //   let zOff = -150
+    //     for(var i = 0; i < 5; i++){
+    //       for(var j = 0; j < 5; j++){
+    //           this.mesh  = new Mesh(this.geometry, this.material);
+    //           this.mesh.position.x = xDist * i + xOff;
+    //           this.mesh.position.z = zDist * j + zOff;
+    //           this.mesh.rotation.x = -Math.PI * .5;
+    //           this.mesh.receiveShadow = true;
+    //           this.scene.add(this.mesh);
+    //       }
+    //   };
+    //   }
     setDebug() {
         // tslint:disable-next-line:no-non-null-assertion
         this.debugFolder = this.debug.ui.addFolder('Sea');

@@ -10,8 +10,8 @@ export default {
       roughness: .5,
     },
     size: {
-      width: 80,
-      height: 100
+      width: 800,
+      height: 1000
     },
     segmentsQty: {
       width: 100,

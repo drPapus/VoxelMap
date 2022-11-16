@@ -494,7 +494,8 @@
     ],
     "occultistsPosition": "2146729970",
     "name": "Adrothra",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "active"
   },
   {
     "id": 16,
@@ -750,7 +751,8 @@
     ],
     "occultistsPosition": "2148958173",
     "name": "Rocknesse",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "active"
   },
   {
     "id": 17,
@@ -997,7 +999,8 @@
     ],
     "occultistsPosition": "2148171724",
     "name": "Riverhedge",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status":"explored"
   },
   {
     "id": 18,
@@ -1255,7 +1258,8 @@
     ],
     "occultistsPosition": "2146860998",
     "name": "Icemarble",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status":"active"
   },
   {
     "id": 19,
@@ -1445,7 +1449,8 @@
     ],
     "occultistsPosition": "2145484751",
     "name": "Mortegard",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status":"active"
   },
   {
     "id": 20,
@@ -1943,7 +1948,8 @@
     ],
     "occultistsPosition": "2143846400",
     "name": "Odiria",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status":"active"
   },
   {
     "id": 22,
@@ -2194,7 +2200,8 @@
     ],
     "occultistsPosition": "2144436248",
     "name": "Mododolon",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "active"
   },
   {
     "id": 23,
@@ -2437,7 +2444,8 @@
     ],
     "occultistsPosition": "2145746986",
     "name": "Delusion Realms",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "active"
   },
   {
     "id": 24,
@@ -2685,7 +2693,8 @@
     ],
     "occultistsPosition": "2148958237",
     "name": "Reklomund",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 25,
@@ -2943,7 +2952,8 @@
     ],
     "occultistsPosition": "2149679115",
     "name": "Wild Terrain",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 26,
@@ -3192,7 +3202,8 @@
     ],
     "occultistsPosition": "2146926643",
     "name": "Regal Realm",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 27,
@@ -3422,7 +3433,8 @@
     ],
     "occultistsPosition": "2145550270",
     "name": "Windy Valley",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 28,
@@ -3655,7 +3667,8 @@
     ],
     "occultistsPosition": "2150006771",
     "name": "Enchanted Nexus",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 29,
@@ -3885,7 +3898,8 @@
     ],
     "occultistsPosition": "2149154765",
     "name": "Mikiaterra",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 30,
@@ -4141,7 +4155,8 @@
     ],
     "occultistsPosition": "2144698412",
     "name": "Howling Domain",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 31,
@@ -4390,7 +4405,8 @@
     ],
     "occultistsPosition": "2143387616",
     "name": "Lunar Fields",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 2,
@@ -4648,7 +4664,8 @@
     ],
     "occultistsPosition": "2145812457",
     "name": "Fate Moon",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 32,
@@ -4877,7 +4894,8 @@
     ],
     "occultistsPosition": "2148761648",
     "name": "Mythic Vales",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "active"
   },
   {
     "id": 33,
@@ -5105,7 +5123,8 @@
     ],
     "occultistsPosition": "2149875679",
     "name": "Lonely Reach",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 34,
@@ -5349,7 +5368,8 @@
     ],
     "occultistsPosition": "2147844031",
     "name": "Braesleton",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 35,
@@ -5577,7 +5597,8 @@
     ],
     "occultistsPosition": "2146467765",
     "name": "Wremor",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 36,
@@ -5832,7 +5853,8 @@
     ],
     "occultistsPosition": "2143584280",
     "name": "Glades of Buchterre",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 37,
@@ -6065,7 +6087,8 @@
     ],
     "occultistsPosition": "2145747005",
     "name": "Moving Waters",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 38,
@@ -6313,7 +6336,8 @@
     ],
     "occultistsPosition": "2147909690",
     "name": "Quagmire",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "active"
   },
   {
     "id": 39,
@@ -6571,7 +6595,8 @@
     ],
     "occultistsPosition": "2149941296",
     "name": "Sunny Polder",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 40,
@@ -6829,7 +6854,8 @@
     ],
     "occultistsPosition": "2149351489",
     "name": "Sunderpond",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 41,
@@ -7070,7 +7096,8 @@
     ],
     "occultistsPosition": "2150334486",
     "name": "Sapphire Cave",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 42,
@@ -7319,7 +7346,8 @@
     ],
     "occultistsPosition": "2150727667",
     "name": "Kroukadena",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 43,
@@ -7557,7 +7585,8 @@
     ],
     "occultistsPosition": "2144632771",
     "name": "Malicious Wilds",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 44,
@@ -7815,7 +7844,8 @@
     ],
     "occultistsPosition": "2143977424",
     "name": "Sandy Wasteland",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 45,
@@ -8068,7 +8098,8 @@
     ],
     "occultistsPosition": "2150006729",
     "name": "Cunning Flatlands",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "active"
   },
   {
     "id": 46,
@@ -8296,7 +8327,8 @@
     ],
     "occultistsPosition": "2150924326",
     "name": "Calm Wilderness",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 47,
@@ -8528,7 +8560,8 @@
     ],
     "occultistsPosition": "2143780801",
     "name": "Everlasting Steppes",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "active"
   },
   {
     "id": 3,
@@ -8756,7 +8789,8 @@
     ],
     "occultistsPosition": "2146992137",
     "name": "Sapphire Isle",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 48,
@@ -8999,7 +9033,8 @@
     ],
     "occultistsPosition": "2144895044",
     "name": "Open Barrens",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 49,
@@ -9243,7 +9278,8 @@
     ],
     "occultistsPosition": "2150400063",
     "name": "Duparstall Ait",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 4,
@@ -9501,7 +9537,8 @@
     ],
     "occultistsPosition": "2146074623",
     "name": "Never Earth",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 5,
@@ -9755,7 +9792,8 @@
     ],
     "occultistsPosition": "2146271197",
     "name": "Jade Vales",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 6,
@@ -10013,7 +10051,8 @@
     ],
     "occultistsPosition": "2147712994",
     "name": "Demi Yonder",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 7,
@@ -10271,7 +10310,8 @@
     ],
     "occultistsPosition": "2144698341",
     "name": "Jade Forest",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 8,
@@ -10756,7 +10796,8 @@
     ],
     "occultistsPosition": "2148499438",
     "name": "Light Flatlands",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status":"active"
   },
   {
     "id": 10,
@@ -10988,7 +11029,8 @@
     ],
     "occultistsPosition": "2146271250",
     "name": "Dry Grasslands",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "active"
   },
   {
     "id": 11,
@@ -11237,7 +11279,8 @@
     ],
     "occultistsPosition": "2148696074",
     "name": "Daveltara Haven",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 12,
@@ -11495,7 +11538,8 @@
     ],
     "occultistsPosition": "2144763910",
     "name": "Boccatopia",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 13,
@@ -11752,7 +11796,8 @@
     ],
     "occultistsPosition": "2146730018",
     "name": "Braseovell",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   },
   {
     "id": 14,
@@ -12000,7 +12045,8 @@
     ],
     "occultistsPosition": "2145484824",
     "name": "Coldwater",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "active"
   },
   {
     "id": 15,
@@ -12236,6 +12282,7 @@
     ],
     "occultistsPosition": "2147975203",
     "name": "Starryhill",
-    "newSettlementPriceLabel": "0.01"
+    "newSettlementPriceLabel": "0.01",
+    "status": "explored"
   }
 ]

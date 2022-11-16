@@ -69,12 +69,34 @@ export default class Sea {
   }
 
 
+  // setMesh() {
+  //   this.mesh = new Mesh(this.geometry, this.material);
+  //   this.mesh.rotation.x = -Math.PI * .5;
+  //   this.mesh.receiveShadow = true;
+  //   this.scene.add(this.mesh);
+  // }
+
+
   setMesh() {
-    this.mesh = new Mesh(this.geometry, this.material);
-    this.mesh.rotation.x = -Math.PI * .5;
-    this.mesh.receiveShadow = true;
-    this.scene.add(this.mesh);
-  }
+    let xDist = 79
+    let zDist = 99
+    let xOff = -160
+    let zOff = -150
+  
+      for(var i = 0; i < 5; i++){
+        for(var j = 0; j < 5; j++){
+  
+            this.mesh  = new Mesh(this.geometry, this.material);
+            this.mesh.position.x = xDist * i + xOff;
+            this.mesh.position.z = zDist * j + zOff;
+            this.mesh.rotation.x = -Math.PI * .5;
+            this.mesh.receiveShadow = true;
+            this.scene.add(this.mesh);
+        }
+    };
+  
+      
+    }
 
 
   setDebug() {

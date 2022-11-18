@@ -4,7 +4,6 @@ import geography from '../../../mocks/zones.json';
 import {TilesType, TilePositionType, PeakLevelsType} from '../../@types/Map';
 import {ConfigInterface} from '../../@types/ConfigInterface';
 import {lerp, randInt, clamp} from 'three/src/math/MathUtils';
-import {Line2} from "three/examples/jsm/lines/Line2";
 
 
 type ContinentBoxType = {
@@ -21,11 +20,12 @@ export const DEFAULT_START_POSITION = 32760;
 export function getGeography(): ContinentInterface[] {
   return geography.map(({id, name, positions}) => {
     const tiles: Uint32Array = new Uint32Array(positions.length);
+    const startCoordinates = getCoordinates(Number(positions[0]));
     const continentBox: ContinentBoxType = {
-      minX: 0,
-      maxX: 0,
-      minZ: 0,
-      maxZ: 0,
+      minX: startCoordinates.x,
+      maxX: startCoordinates.x,
+      minZ: startCoordinates.z,
+      maxZ: startCoordinates.z,
     };
 
     for (let i = 0; i < positions.length; i++) {
@@ -106,16 +106,24 @@ export function getTilesLevel(
   const width = new Vector2(continentBox.minX, 0).distanceTo(new Vector2(continentBox.maxX, 0));
   const height = new Vector2(continentBox.minZ, 0).distanceTo(new Vector2(continentBox.maxZ, 0));
 
+  console.log(continentBox);
   for (const [index, position] of tiles.entries()) {
     const {x, z} = getCoordinates(position);
 
-   // const tmp = 4
-    const tmp = Math.abs(Math.ceil(
-      Math.sin(
-      Math.sin(clamp(x, continentBox.minX, continentBox.maxX) / width) *
-        Math.sin(clamp(z, continentBox.minZ, continentBox.maxZ) / height)
-      ) * 4
-    ));
+    const xFromMin = new Vector2(continentBox.minX, 0).distanceTo(new Vector2(x, 0));
+    const zFromMin = new Vector2(continentBox.minZ, 0).distanceTo(new Vector2(z, 0));
+
+
+    const tmp = Math.ceil(
+      Math.sin(xFromMin / width) * 4
+    );
+    console.log(xFromMin, width, zFromMin, tmp);
+    // const tmp = Math.abs(Math.ceil(
+    //   Math.sin(
+    //   Math.sin(clamp(x, continentBox.minX, continentBox.maxX) / width) *
+    //     Math.sin(clamp(z, continentBox.minZ, continentBox.maxZ) / height)
+    //   ) * 4
+    // ));
     // const tmp = Math.ceil(Math.abs(Math.sin(
     //   (clamp(x, continentBox.minX, continentBox.maxX))
     //   * (clamp(z, continentBox.minZ, continentBox.maxZ))
@@ -127,7 +135,8 @@ export function getTilesLevel(
       // (Math.abs(Math.sin(clamp(x, continentBox.minX, continentBox.maxX))) * 4
       //   + Math.abs(Math.sin(clamp(z, continentBox.minZ, continentBox.maxZ))) * 4
       // ) / 2);
-    console.log({x, z},clamp(x, continentBox.minX, continentBox.maxX), continentBox, {width, height}, tmp);
+    // console.log({x, z},clamp(x, continentBox.minX, continentBox.maxX), continentBox, {width, height}, tmp);
+    // console.log(xFromMin, zFromMin, tmp, clamp(x, continentBox.minX, continentBox.maxX));
     levels[index] = tmp;
   }
 

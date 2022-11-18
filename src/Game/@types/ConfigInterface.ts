@@ -1,4 +1,5 @@
 import {ColorRepresentation} from 'three';
+import {FaceInterface} from './Face';
 
 export interface ConfigInterface {
   camera: {
@@ -32,12 +33,15 @@ export interface ConfigInterface {
     exploredLandEmissiveIntensity: number,
     treesColor: ColorRepresentation,
     mountainColor: ColorRepresentation,
-    selectionVoxelHeight: number
+    selectionVoxelHeight: number,
+    peakLevelColors: ColorRepresentation[],
     voxel: {
       size: number,
+      width: number,
+      height: number,
       depth: number,
-      sideColor: ColorRepresentation
-      peakLevelColors: ColorRepresentation[]
+      sideColor: ColorRepresentation,
+      faces?: FaceInterface[],
     }
   };
 }

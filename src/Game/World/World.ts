@@ -1,17 +1,17 @@
 import Environment from './Environment';
 import Sea from './Sea';
-import States from './States';
+import Continents from './Continents';
 
 
 export default class World {
-  states: States;
+  continents: Continents;
   environment: Environment;
   sea: Sea;
 
 
   constructor() {
     this.sea = new Sea();
-    this.states = new States();
+    this.continents = new Continents();
     this.environment = new Environment();
   }
 

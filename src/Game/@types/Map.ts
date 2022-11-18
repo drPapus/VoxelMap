@@ -1,7 +1,17 @@
-import {StateInterface} from './State';
+import {ContinentInterface} from './Continent';
 
 
-export type Tiles = Uint32Array;
+export type TilesType = Uint32Array;
+
+
+export type PeakLevelsType = Uint8Array;
+
+
+export type TilePositionType = {
+  x: number,
+  y?: number,
+  z: number,
+};
 
 
 export interface MapInterface {
@@ -12,6 +22,10 @@ export interface MapInterface {
       displacementScale: number,
       roughness: number,
     },
+    woodTextureRepeat: {
+      x: number,
+      y: number,
+    }
     size: {
       width: number,
       height: number,
@@ -26,5 +40,5 @@ export interface MapInterface {
       z: number,
     }
   };
-  states: StateInterface[];
+  continents: ContinentInterface[];
 }

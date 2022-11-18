@@ -16,7 +16,7 @@ import DefaultConfig from './Configs/DefaultConfig';
 import FirstMapSources from './Maps/FirstMap/Sources';
 import FirstMap from './Maps/FirstMap/FirstMap';
 
-import {SourceInterface} from './@types/SourceInterface';
+import {SourceInterface} from './@types/Source';
 import {ConfigInterface} from './@types/ConfigInterface';
 import {MapInterface} from './@types/Map';
 

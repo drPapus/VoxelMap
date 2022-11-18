@@ -82,11 +82,11 @@ export default class SelectionVoxel {
     this.materials.side.uniforms = {};
     this.materials.side.uniforms.uTime = {value: 0};
     this.materials.side.uniforms.uColor = {value: new Color('#ffee9c')};
-    this.materials.side.uniforms.uSpeed = {value: 2.0};
+    this.materials.side.uniforms.uSpeed = {value: 1.0};
     this.materials.side.uniforms.uTransparency = {value: .15};
-    this.materials.side.uniforms.uWeight = {value: 0.4};
+    this.materials.side.uniforms.uWeight = {value: 6.0};
     this.materials.side.uniforms.uPointSize = {value: 1.0};
-    this.materials.side.uniforms.uResolution = {value: new Vector2(0.24, 1.0)};
+    this.materials.side.uniforms.uResolution = {value: new Vector2(1.0, 1.0)};
     this.materials.side.side = DoubleSide;
     this.materials.side.depthWrite = false;
     this.materials.side.transparent = true;

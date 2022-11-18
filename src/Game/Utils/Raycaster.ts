@@ -1,5 +1,4 @@
 import {
-  Material,
   Mesh,
   Raycaster as ThreeRaycaster,
   Vector2,
@@ -8,7 +7,7 @@ import {
 import Main from '../Main';
 
 import SelectionVoxel from '../Controls/SelectionVoxel';
-import States from '../World/States';
+import Continents from '../World/Continents';
 
 
 export default class Raycaster {
@@ -16,7 +15,7 @@ export default class Raycaster {
   main: Main;
   camera: Main['camera'];
   sizes: Main['sizes'];
-  states: States;
+  continents: Continents;
   controls: Main['controls'];
   selectionVoxel: SelectionVoxel;
   pointer: Vector2;
@@ -37,7 +36,7 @@ export default class Raycaster {
     this.intersectedLand = undefined;
     this.intersectedCell = undefined;
     // tslint:disable-next-line:no-non-null-assertion
-    this.states = this.main.world!.states;
+    this.continents = this.main.world!.continents;
 
     this.instance.layers.set(1);
     this.setIntersectObjects();
@@ -54,10 +53,10 @@ export default class Raycaster {
 
   setIntersectObjects() {
     this.intersectObjects = [];
-    for (const state of Object.values(this.states.states)) {
-      if (state.status === 'disabled') {continue;}
+    for (const continent of Object.values(this.continents.continents)) {
+      if (continent.status === 'disabled') {continue;}
       // tslint:disable-next-line:no-non-null-assertion
-      this.intersectObjects.push(state.landscape.mesh!);
+      this.intersectObjects.push(continent.landscape.mesh!);
     }
   }
 
@@ -70,7 +69,7 @@ export default class Raycaster {
 
     if (!intersects.length) {
       if (this.intersectedLand) {
-        this.states.unsetIntersected(this.intersectedLand);
+        this.continents.unsetIntersected(this.intersectedLand);
         this.intersectedLand = undefined;
       }
       if (this.intersectedCell) {
@@ -95,10 +94,10 @@ export default class Raycaster {
 
     if (this.intersectedLand !== intersectLand) {
       if (this.intersectedLand) {
-        this.states.unsetIntersected(this.intersectedLand);
+        this.continents.unsetIntersected(this.intersectedLand);
       }
       this.intersectedLand = intersectLand;
-      this.states.setIntersected(this.intersectedLand);
+      this.continents.setIntersected(this.intersectedLand);
     }
 
     if (intersectCell) {
@@ -141,7 +140,7 @@ export default class Raycaster {
 
   setSelectionVoxelPosition() {
     // tslint:disable-next-line:no-non-null-assertion
-    const {x, y, z} = this.states.stateByMeshId[this.intersectedLand!].cells![this.intersectedCell!].position;
+    const {x, y, z} = this.continents.continentByMeshId[this.intersectedLand!].cells![this.intersectedCell!].position;
     this.selectionVoxel.setPosition(x, y, z);
   }
 }

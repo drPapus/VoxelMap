@@ -1,8 +1,12 @@
-import {SourceInterface} from '../../@types/SourceInterface';
+import {SourceInterface} from '../../@types/Source';
 
 const mapsPath = 'static/map';
 const mapFolder = '/first_map';
 const mapPath = `${mapsPath}${mapFolder}`;
+
+
+const woodTextureRepeat = {x: 48, y: 48};
+
 
 const Sources: SourceInterface[] = [
   // EnvMap
@@ -21,7 +25,8 @@ const Sources: SourceInterface[] = [
   {
     name: 'woodBaseColorTexture',
     type: 'texture',
-    path: `${mapPath}/wood_basecolor.jpg`
+    path: `${mapPath}/wood/wood_basecolor.jpg`,
+    repeat: woodTextureRepeat,
   },
   // {
   //   name: 'testTexture',
@@ -31,17 +36,20 @@ const Sources: SourceInterface[] = [
   {
     name: 'woodNormalTexture',
     type: 'texture',
-    path: `${mapPath}/wood_normal.png`
+    path: `${mapPath}/wood/wood_normal.png`,
+    repeat: woodTextureRepeat,
   },
   {
     name: 'woodRougMapTexture',
     type: 'texture',
-    path: `${mapPath}/wood_roughness.jpg`
+    path: `${mapPath}/wood/wood_roughness.jpg`,
+    repeat: woodTextureRepeat,
   },
   {
     name: 'woodHightMapTexture',
     type: 'texture',
-    path: `${mapPath}/wood_hight.jpg`
+    path: `${mapPath}/wood/wood_hight.jpg`,
+    repeat: woodTextureRepeat,
   },
 
   // Models

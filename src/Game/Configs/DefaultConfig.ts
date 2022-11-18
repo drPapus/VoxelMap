@@ -1,5 +1,11 @@
 import {ConfigInterface} from '../@types/ConfigInterface';
 
+const voxel = {
+  size: 1,
+  depth: .5,
+};
+
+
 export default {
   camera: {
     position: {
@@ -32,19 +38,21 @@ export default {
     treesColor: '#0a591b',
     mountainColor: '#f7efd3',
     selectionVoxelHeight: 2,
+    peakLevelColors: [
+      // индекс = этаж
+      '#51936f', // 1
+      '#398427', // 2
+      '#779645', // 3
+      '#ded6bc', // 6
+      '#695843', // 4
+      '#937b5c', // 5
+    ],
     voxel: {
-      size: 1,
-      depth: .5,
+      size: voxel.size,
+      width: voxel.size * Math.sqrt(3),
+      height: voxel.size * 2,
+      depth: voxel.depth,
       sideColor: '#424d1c',
-      peakLevelColors: [
-        // индекс = этаж высоты
-        '#51936f', // 1
-        '#398427', // 2
-        '#779645', // 3
-        '#ded6bc', // 6
-        '#695843', // 4
-        '#937b5c', // 5
-      ],
     },
   },
 } as ConfigInterface;

@@ -3,13 +3,15 @@ import {
   Texture,
   TextureLoader,
   DataTexture,
-  EventDispatcher
+  EventDispatcher,
+  RepeatWrapping
 } from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 
-import {SourceInterface} from '../@types/SourceInterface';
+import {SourceInterface, TextureType} from '../@types/Source';
 import {GLTF} from 'three/examples/jsm/loaders/GLTFLoader';
+import {setTextureRepeating} from './ResourcesHelpers';
 
 
 export default class Resources extends EventDispatcher {
@@ -56,7 +58,7 @@ export default class Resources extends EventDispatcher {
           this.loaders.textureLoader.load(
             source.path,
             (file: Texture) => {
-              this.sourceLoaded(source.name, file);
+              this.sourceLoaded(source, file);
             }
           );
           break;
@@ -64,7 +66,7 @@ export default class Resources extends EventDispatcher {
           this.loaders.RGBELoader.load(
             source.path,
             (file: DataTexture) => {
-              this.sourceLoaded(source.name, file);
+              this.sourceLoaded(source, file);
             }
           );
           break;
@@ -72,7 +74,7 @@ export default class Resources extends EventDispatcher {
           this.loaders.gltfLoader.load(
             source.path,
             (file: any) => {
-              this.sourceLoaded(source.name, file);
+              this.sourceLoaded(source, file);
             }
           );
           break;
@@ -81,8 +83,10 @@ export default class Resources extends EventDispatcher {
   }
 
 
-  sourceLoaded(sourceName: string, file: Texture | DataTexture) {
-    this.items[sourceName] = file;
+  sourceLoaded(source: SourceInterface, file: TextureType) {
+    if (source.repeat) {setTextureRepeating(source, file);}
+
+    this.items[source.name] = file;
 
     this.loaded++;
 
@@ -90,4 +94,7 @@ export default class Resources extends EventDispatcher {
       this.dispatchEvent({type: 'ready'});
     }
   }
+
+
+
 }

@@ -3,7 +3,6 @@ import {
   MeshStandardMaterial,
   Mesh,
   PlaneBufferGeometry,
-  RepeatWrapping,
 } from 'three';
 import {GUI} from 'dat.gui';
 
@@ -50,22 +49,11 @@ export default class Sea {
 
   setTextures() {
     this.textures = {};
-     this.textures.map = this.resources.items.woodBaseColorTexture;
-     this.textures.map.wrapS = this.textures.map.wrapT = RepeatWrapping
-     this.textures.map.repeat.set(48, 48);
-
-     this.textures.normalMap = this.resources.items.woodNormalTexture;
-     this.textures.normalMap.wrapS = this.textures.normalMap.wrapT = RepeatWrapping
-     this.textures.normalMap.repeat.set(48, 48);
-
-     this.textures.roughnessMap = this.resources.items.woodRougMapTexture;
-     this.textures.roughnessMap.wrapS = this.textures.roughnessMap.wrapT = RepeatWrapping
-     this.textures.roughnessMap.repeat.set(48, 48);
-
-     this.textures.displacementMap = this.resources.items.woodHightMapTexture;
-     this.textures.displacementMap.wrapS = this.textures.displacementMap.wrapT = RepeatWrapping
-     this.textures.displacementMap.repeat.set(48, 48);
-
+    // this.textures.test = this.resources.items.testTexture
+    this.textures.map = this.resources.items.woodBaseColorTexture;
+    this.textures.normalMap = this.resources.items.woodNormalTexture;
+    this.textures.roughnessMap = this.resources.items.woodRougMapTexture;
+    this.textures.displacementMap = this.resources.items.woodHightMapTexture;
   }
 
 
@@ -87,28 +75,6 @@ export default class Sea {
     this.mesh.receiveShadow = true;
     this.scene.add(this.mesh);
   }
-
-
-  // setMesh() {
-  //   let xDist = 79
-  //   let zDist = 99
-  //   let xOff = -160
-  //   let zOff = -150
-  
-  //     for(var i = 0; i < 5; i++){
-  //       for(var j = 0; j < 5; j++){
-  
-  //           this.mesh  = new Mesh(this.geometry, this.material);
-  //           this.mesh.position.x = xDist * i + xOff;
-  //           this.mesh.position.z = zDist * j + zOff;
-  //           this.mesh.rotation.x = -Math.PI * .5;
-  //           this.mesh.receiveShadow = true;
-  //           this.scene.add(this.mesh);
-  //       }
-  //   };
-  
-      
-  //   }
 
 
   setDebug() {

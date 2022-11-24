@@ -3,44 +3,28 @@ import {
   Texture,
   TextureLoader,
   DataTexture,
-  EventDispatcher,
-  RepeatWrapping
 } from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
+import {RGBELoader} from 'three/examples/jsm/loaders/RGBELoader';
 
-import {SourceInterface, TextureType} from '../@types/Source';
+import {SourceInterface, SourceKey, SourcesType, SourceType} from '../@types/Source';
 import {GLTF} from 'three/examples/jsm/loaders/GLTFLoader';
 import {setTextureRepeating} from './ResourcesHelpers';
 
 
-export default class Resources extends EventDispatcher {
-  loaders!: {
+export default class Resources {
+  loaders: {
     textureLoader: TextureLoader,
     RGBELoader: RGBELoader,
     gltfLoader: GLTFLoader
   };
-  sources: SourceInterface[];
-  items: Record<string, Texture | GLTF>;
-  toLoad: number;
-  loaded: number;
+  #queue: Record<SourceKey, Promise<void>> = {};
+  sources: SourcesType;
+  items: Record<SourceKey, SourceType> = {};
 
 
-  constructor(sources: SourceInterface[]) {
-    super();
-
+  constructor(sources: SourcesType) {
     this.sources = sources;
-
-    this.items = {};
-    this.toLoad = this.sources.length;
-    this.loaded = 0;
-
-    this.setLoaders();
-    this.startLoading();
-  }
-
-
-  setLoaders() {
     this.loaders = {
       textureLoader: new TextureLoader(),
       RGBELoader: new RGBELoader(),
@@ -51,50 +35,37 @@ export default class Resources extends EventDispatcher {
   }
 
 
-  startLoading() {
-    for (const source of this.sources) {
-      switch (source.type) {
-        case 'texture':
-          this.loaders.textureLoader.load(
-            source.path,
-            (file: Texture) => {
-              this.sourceLoaded(source, file);
-            }
-          );
-          break;
-        case 'envMapTexture':
-          this.loaders.RGBELoader.load(
-            source.path,
-            (file: DataTexture) => {
-              this.sourceLoaded(source, file);
-            }
-          );
-          break;
-        case 'glb':
-          this.loaders.gltfLoader.load(
-            source.path,
-            (file: any) => {
-              this.sourceLoaded(source, file);
-            }
-          );
-          break;
-      }
+  async getSource(sourceKey: SourceKey) {
+    // console.log(this.queue, this.items);
+    if (this.items[sourceKey]) {return this.items[sourceKey];}
+    if (!this.#queue.hasOwnProperty(sourceKey)) {
+      this.#queue[sourceKey] = this.loadSource(sourceKey).finally(() => {
+        delete this.#queue[sourceKey];
+      });
     }
+    await this.#queue[sourceKey];
+    return this.items[sourceKey];
   }
 
+  async loadSource(sourceKey: SourceKey) {
+    const source = this.sources[sourceKey];
+    if (!source) {throw new Error('Wrong source key!');}
+    let file;
 
-  sourceLoaded(source: SourceInterface, file: TextureType) {
-    if (source.repeat) {setTextureRepeating(source, file);}
-
-    this.items[source.name] = file;
-
-    this.loaded++;
-
-    if (this.loaded === this.toLoad) {
-      this.dispatchEvent({type: 'ready'});
+    switch (source.type) {
+      case 'texture':
+        file = await this.loaders.textureLoader.loadAsync(source.path);
+        break;
+      case 'envMapTexture':
+        file = await this.loaders.RGBELoader.loadAsync(source.path);
+        break;
+      case 'glb':
+        file = await this.loaders.gltfLoader.loadAsync(source.path);
+        break;
     }
+
+    if (!file) {throw new Error('No file Loaded');}
+    if (source.type === 'texture' && source.repeat) {setTextureRepeating(source, file as Texture);}
+    this.items[sourceKey] = file;
   }
-
-
-
 }

@@ -11,17 +11,18 @@ import Cells from './Continent/Cells';
 import {VoxelLandscape} from './Continent/VoxelLandscape';
 import {ContinentInterface} from '../@types/Continent';
 import Trees from './Continent/Trees';
-import Villages from './Continent/Villages';
-import Goddess from './Continent/Goddess';
+// import Villages from './Continent/Villages';
+// import Goddess from './Continent/Goddess';
 import Mountains from './Continent/Mountains';
+import ZoneName from './Continent/ZoneName';
 
 
 export default class Continents {
-  main: Main;
-  map: Main['map'];
-  debug: Main['debug'];
-  debugFolder?: GUI;
-  config: Main['config'];
+  #main: Main;
+  #map: Main['map'];
+  #debug: Main['debug'];
+  #debugFolder?: GUI;
+  #config: Main['config'];
   continents!: Record<ContinentInterface['id'], ContinentInterface>;
   continentByMeshId!: Record<Mesh['id'], ContinentInterface>;
   defaultEmissive?: ColorRepresentation;
@@ -31,55 +32,60 @@ export default class Continents {
 
 
   constructor() {
-    this.main = new Main();
-    this.map = this.main.map;
-    this.debug = this.main.debug;
-    this.config = this.main.config;
+    this.#main = new Main();
+    this.#map = this.#main.map;
+    this.#debug = this.#main.debug;
+    this.#config = this.#main.config;
     this.defaultEmissive = undefined;
     this.defaultEmissiveIntensity = undefined;
-    this.hoveredEmissive = this.config.world.hoverEmisseve;
-    this.hoveredEmissiveIntensity = this.config.world.hoverEmisseveIntensity;
+    this.hoveredEmissive = this.#config.world.hoverEmisseve;
+    this.hoveredEmissiveIntensity = this.#config.world.hoverEmisseveIntensity;
+    this.continents = {};
+    this.continentByMeshId = {};
 
-    this.setcontinents();
+    this.setContinents();
 
-    if (this.debug.active) {
+    if (this.#debug.active) {
       this.setDebug();
     }
   }
 
 
-  setcontinents() {
-    this.continents = {};
-    this.continentByMeshId = {};
-    for (const continent of this.map.continents) {
+  setContinents() {
+    for (const continent of this.#map.continents) {
       const voxelLandscape = new VoxelLandscape(continent);
       const peaks = new Peaks(continent);
-      let cells, trees, villages, mountains, goddesses;
+      let cells, trees, villages, mountains, goddesses, zoneName;
 
       if (continent.status !== 'disabled') {
-        cells = new Cells(continent);
-        trees = new Trees(peaks, continent.status);
-        mountains = new Mountains(peaks, continent.status);
+        
+        // cells = new Cells(continent);
+        // trees = new Trees(peaks, continent.status);
+        // voxelLandscape.mesh.add(trees.mesh);
+        // mountains = new Mountains(peaks, continent.status);
         // villages = continent.village ? new Villages(continent, Object.values(cells.cells)) : villages
         // goddesses = continent.goddess ? new Goddess(continent, Object.values(cells.cells)) : goddesses
         // tslint:disable-next-line:no-non-null-assertion
-        voxelLandscape.mesh!.add(...cells.meshes);
+        // voxelLandscape.mesh!.add(...cells.meshes);
+      } else {
+        zoneName = new ZoneName(continent)
       }
 
-      // tslint:disable-next-line:no-non-null-assertion
-      voxelLandscape.mesh!.add(
+
+      voxelLandscape.mesh.add(
         ...Object.values(peaks.meshes),
       );
 
       this.continents[continent.id] = continent;
       this.continents[continent.id].landscape.mesh = voxelLandscape.mesh;
       this.continents[continent.id].landscape.peakMeshes = peaks.meshes;
-      this.continents[continent.id].cells = cells?.cells;
-      this.continents[continent.id].trees = trees?.mesh;
-      this.continents[continent.id].mountains = mountains?.mesh;
+      // this.continents[continent.id].cells = cells?.cells;
+      // this.continents[continent.id].trees = trees?.mesh;
+      // this.continents[continent.id].mountains = mountains?.mesh;
       // tslint:disable-next-line:no-non-null-assertion
       this.continentByMeshId[voxelLandscape.mesh!.id] = this.continents[continent.id];
     }
+    console.log(this.#main.renderer.instance.info);
   }
 
 
@@ -131,22 +137,21 @@ export default class Continents {
 
 
   setDebug() {
-    // tslint:disable-next-line:no-non-null-assertion
-    this.debugFolder = this.debug.ui!.addFolder('continents');
+    this.#debugFolder = (this.#debug.ui as GUI).addFolder('continents');
     const colors = {
-      peaks: this.config.world.peakLevelColors,
-      trees: this.config.world.treesColor,
-      mountains: this.config.world.mountainColor
+      peaks: this.#config.world.peakLevelColors,
+      trees: this.#config.world.trees.color,
+      mountains: this.#config.world.mountainColor
     };
     const emissive = {
-      color: this.config.world.exploredLandEmissive,
-      intensity: this.config.world.exploredLandEmissiveIntensity,
-      hover: this.config.world.hoverEmisseve,
-      hoverIntensity: this.config.world.hoverEmisseveIntensity
+      color: this.#config.world.exploredLandEmissive,
+      intensity: this.#config.world.exploredLandEmissiveIntensity,
+      hover: this.#config.world.hoverEmisseve,
+      hoverIntensity: this.#config.world.hoverEmisseveIntensity
     };
 
     // Hovered
-    const hovered = this.debugFolder.addFolder('Hovered');
+    const hovered = this.#debugFolder.addFolder('Hovered');
     hovered.addColor(emissive, 'hover')
       .name('Color')
       .onChange(() => {
@@ -162,7 +167,7 @@ export default class Continents {
       });
 
     // Explored Land
-    const explored = this.debugFolder.addFolder('Explored Land');
+    const explored = this.#debugFolder.addFolder('Explored Land');
     explored.addColor(emissive, 'color')
       .name('Emissive color')
       .onChange(() => {
@@ -212,7 +217,7 @@ export default class Continents {
       });
 
     // Peaks
-    const peaks = this.debugFolder.addFolder('Peaks');
+    const peaks = this.#debugFolder.addFolder('Peaks');
     for (let i = 0; i < colors.peaks.length; i++) {
       peaks.addColor(colors.peaks, i.toString())
         .name(`Color LVL ${i + 1}`)
@@ -227,7 +232,7 @@ export default class Continents {
     }
 
     // Trees
-    const trees = this.debugFolder.addFolder('Trees');
+    const trees = this.#debugFolder.addFolder('Trees');
     trees.addColor(colors, 'trees')
       .name('Color')
       .onChange(() => {
@@ -239,7 +244,7 @@ export default class Continents {
       });
 
     // Mountains
-    const mountains = this.debugFolder.addFolder('Mountains');
+    const mountains = this.#debugFolder.addFolder('Mountains');
     mountains.addColor(colors, 'mountains')
       .name('Color')
       .onChange(() => {

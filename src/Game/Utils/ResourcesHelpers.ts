@@ -1,10 +1,11 @@
-import {RepeatWrapping} from 'three';
-import {SourceInterface, TextureType} from '../@types/Source';
+import {RepeatWrapping, Texture} from 'three';
+import {SourceInterface, SourceType} from '../@types/Source';
 
 
-export function setTextureRepeating(source: SourceInterface, texture: TextureType) {
+export function setTextureRepeating(source: SourceInterface, texture: Texture) {
   if (!source.repeat || !Object.keys(source.repeat).length) {
-    throw new Error('No texture "Repeat" property');
+    console.warn('No texture "Repeat" property');
+    return;
   }
   const x = source.repeat.x;
   const y = source.repeat.y;

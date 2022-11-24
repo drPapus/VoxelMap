@@ -5,7 +5,7 @@ import {
   Matrix4,
   Object3D,
   MeshStandardMaterial,
-  BufferGeometry,
+  BufferGeometry, Texture,
 } from 'three';
 import {
   randInt,
@@ -19,35 +19,48 @@ import {ContinentInterface} from '../../@types/Continent';
 import Peaks from './Peaks';
 
 
+export function getCacheKeyForTreeMaterial(continentStatus: ContinentInterface['status']) {
+  return `tree_material_${continentStatus}`;
+}
+
+
 export default class Trees {
-  main: Main;
-  scene: Main['scene'];
-  resources: Main['resources'];
-  config: Main['config'];
+  #main: Main;
+  #scene: Main['scene'];
+  #resources: Main['resources'];
+  #config: Main['config'];
+  #cache: Main['cache'];
   // textures!: Record<string, any>
   treeModel!: GLTF;
   continentStatus: ContinentInterface['status'];
-  peaks: Peaks;
-  treeObj: Mesh;
+  #peaks: Peaks;
+  treeObj!: Mesh;
   mesh!: Mesh;
   material!: MeshStandardMaterial;
   geometry!: BufferGeometry;
 
 
   constructor(peaks: Peaks, continentStatus: ContinentInterface['status']) {
-    this.main = new Main();
-    this.scene = this.main.scene;
-    this.config = this.main.config;
-    this.resources = this.main.resources;
-    this.treeModel = this.resources.items.treeGlb as GLTF;
-    this.peaks = peaks;
+    this.#main = new Main();
+    this.#scene = this.#main.scene;
+    this.#config = this.#main.config;
+    this.#cache = this.#main.cache;
+    this.#resources = this.#main.resources;
+    this.#peaks = peaks;
     this.continentStatus = continentStatus;
-    this.treeObj = this.treeModel.scene.getObjectByName('tree_default') as Mesh;
 
-    this.setGeometry();
-    this.setMaterial();
-    // this.setTextures()
-    this.setMesh();
+    (async () => {
+      await this.loadResources();
+      this.setGeometry();
+      this.setMaterial();
+      this.setMesh();
+    })();
+  }
+
+
+  async loadResources() {
+    this.treeModel = await this.#resources.getSource(this.#config.world.trees.model) as GLTF;
+    this.treeObj = this.treeModel.scene.getObjectByName('tree_default') as Mesh;
   }
 
 
@@ -60,36 +73,39 @@ export default class Trees {
 
 
   setMaterial() {
+    const key = getCacheKeyForTreeMaterial(this.continentStatus);
+    if (this.#cache[key]) {
+      this.material = this.#cache[key] as MeshStandardMaterial;
+      return;
+    }
     this.material = this.treeObj.material as MeshStandardMaterial;
     this.material = this.material.clone();
-    this.material.color.set(this.config.world.treesColor);
+    this.material.color.set(this.#config.world.trees.color);
     if (this.continentStatus === 'explored') {
-      this.material.emissive.set(this.config.world.exploredLandEmissive);
-      this.material.emissiveIntensity = this.config.world.exploredLandEmissiveIntensity;
+      this.material.emissive.set(this.#config.world.exploredLandEmissive);
+      this.material.emissiveIntensity = this.#config.world.exploredLandEmissiveIntensity;
     }
     this.material.emissiveIntensity = 0.2;
-  }
 
-
-  setTextures() {
-    // this.textures = {}
+    this.#cache[key] = this.material;
   }
 
 
   setMesh() {
-    for  (const peak of this.peaks.meshes) {
-      const _count = randInt(4, 12);
-      const sampler = new MeshSurfaceSampler(peak).build();
-      const sampleMesh = new InstancedMesh(this.geometry, this.material, _count);
-      sampleMesh.castShadow = true;
-      sampleMesh.receiveShadow = true;
-      const _position = new Vector3();
-      const _dummy = new Object3D();
-      const _normal = new Vector3();
-      for (let i = 0; i < _count; i++) {
+    const huy = new Mesh(this.geometry, undefined);
+    const _count = randInt(20, 40);
+    const sampleMesh = new InstancedMesh(this.geometry, this.material, _count);
+    sampleMesh.castShadow = true;
+    sampleMesh.receiveShadow = true;
+    const _position = new Vector3();
+    const _dummy = new Object3D();
+    const _normal = new Vector3();
+    for (let i = 0; i < this.#peaks.meshes.length - 1; i++) {
+      const sampler = new MeshSurfaceSampler(this.#peaks.meshes[i]).build();
+      for (let i = 0; i < _count / Math.floor(this.#peaks.meshes.length); i++) {
+        const scale = randFloat(2.5, 5);
         sampler.sample(_position, _normal);
         _normal.add(_position);
-        const scale = randFloat(2.5, 5);
         _dummy.scale.set(scale, scale, scale);
         _dummy.position.copy(_position);
         _dummy.lookAt(_normal);
@@ -97,7 +113,6 @@ export default class Trees {
         sampleMesh.setMatrixAt(i, _dummy.matrix);
       }
       this.mesh = sampleMesh;
-      peak.add(sampleMesh);
     }
   }
 }

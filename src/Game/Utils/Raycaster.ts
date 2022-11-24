@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Mesh,
   Raycaster as ThreeRaycaster,

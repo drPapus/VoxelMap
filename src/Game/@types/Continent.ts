@@ -1,5 +1,6 @@
 import {
-  Mesh
+  Mesh,
+  MeshStandardMaterial,
 } from 'three';
 import {LandCellInterface} from './LandCellInterface';
 import {SourceInterface} from './Source';
@@ -28,6 +29,7 @@ export interface ContinentInterface {
   }[];
   goddess?: {
     name: string,
+    // @ts-ignore TODO DELETE
     model: SourceInterface['name'],
     position: {
       x: number,

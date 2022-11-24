@@ -1,31 +1,25 @@
-import {SourceInterface} from '../../@types/Source';
+import {SourceInterface, SourceKey} from '../../@types/Source';
+import {woodTextureRepeat} from './FirstMap';
 
 const mapsPath = 'static/map';
 const mapFolder = '/first_map';
 const mapPath = `${mapsPath}${mapFolder}`;
 
-
-const woodTextureRepeat = {x: 48, y: 48};
-
-
-const Sources: SourceInterface[] = [
+const Sources: Record<SourceKey, SourceInterface> = {
   // EnvMap
-  {
-    name: 'environmentMapTexture',
+  environmentMapTexture: {
     type: 'envMapTexture',
     path: `${mapsPath}/common/envmap.hdr`
   },
 
   // Textures
-  {
-    name: 'flameBaseColorTexture',
+  // flameBaseColorTexture: {
+  //   type: 'texture',
+  //   path: `${mapsPath}/common/flame.png`
+  // },
+  woodBaseColorTexture: {
     type: 'texture',
-    path: `${mapsPath}/common/flame.png`
-  },
-  {
-    name: 'woodBaseColorTexture',
-    type: 'texture',
-    path: `${mapPath}/wood/wood_basecolor.jpg`,
+    path: `${mapPath}/wood/compressed/wood.jpg`,
     repeat: woodTextureRepeat,
   },
   // {
@@ -33,93 +27,78 @@ const Sources: SourceInterface[] = [
   //   type: 'texture',
   //   path: `static/debug/test.jpg`
   // },
-  {
-    name: 'woodNormalTexture',
+  woodNormalTexture: {
     type: 'texture',
-    path: `${mapPath}/wood/wood_normal.png`,
+    path: `${mapPath}/wood/compressed/wood_normal.png`,
     repeat: woodTextureRepeat,
   },
-  {
-    name: 'woodRougMapTexture',
+  woodRougMapTexture: {
     type: 'texture',
-    path: `${mapPath}/wood/wood_roughness.jpg`,
+    path: `${mapPath}/wood/compressed/wood_roughness.jpg`,
     repeat: woodTextureRepeat,
   },
-  {
-    name: 'woodHightMapTexture',
+  woodHightMapTexture: {
     type: 'texture',
-    path: `${mapPath}/wood/wood_hight.jpg`,
+    path: `${mapPath}/wood/compressed/wood_hight.jpg`,
     repeat: woodTextureRepeat,
   },
 
   // Models
-  {
-    name: 'treeGlb',
+  treeGlb: {
     type: 'glb',
     path: `${mapPath}/tree_default.glb`
   },
-  {
-    name: 'mountainGlb',
+  mountainGlb: {
     type: 'glb',
-    path: `${mapPath}/mountain_default.glb`
+    path: `${mapPath}/compressed/mountain_default.glb`
   },
-  // {
-  //   name: 'armyBattle',
-  //   type: 'glb',
-  //   path: `${mapPath}/army/battle.glb`
-  // },
-  // {
-  //   name: 'armyTent',
-  //   type: 'glb',
-  //   path: `${mapPath}/army/tent.glb`
-  // },
-  {
-    name: 'goddess1',
+  // Army
+  armyBattle: {
+    type: 'glb',
+    path: `${mapPath}/army/battle.glb`
+  },
+  armyTent: {
+    type: 'glb',
+    path: `${mapPath}/army/tent.glb`
+  },
+  // Goddesses
+  goddess1: {
     type: 'glb',
     path: `${mapPath}/goddess/goddess_stage_1.glb`
   },
-  {
-    name: 'goddess2',
+  goddess2: {
     type: 'glb',
     path: `${mapPath}/goddess/goddess_stage_2.glb`
   },
-  {
-    name: 'goddess3',
+  goddess3: {
     type: 'glb',
     path: `${mapPath}/goddess/goddess_stage_3.glb`
   },
-  {
-    name: 'goddess4',
+  goddess4: {
     type: 'glb',
     path: `${mapPath}/goddess/goddess_stage_4.glb`
   },
-  {
-    name: 'goddess5',
+  goddess5: {
     type: 'glb',
     path: `${mapPath}/goddess/goddess_stage_5.glb`
   },
-  {
-    name: 'goddess6',
+  goddess6: {
     type: 'glb',
     path: `${mapPath}/goddess/goddess_stage_6.glb`
   },
-  {
-    name: 'goddess7',
+  goddess7: {
     type: 'glb',
     path: `${mapPath}/goddess/goddess_stage_7.glb`
   },
-  {
-    name: 'goddess8',
+  goddess8: {
     type: 'glb',
     path: `${mapPath}/goddess/goddess_stage_8.glb`
   },
-  {
-    name: 'goddess9',
+  goddess9: {
     type: 'glb',
     path: `${mapPath}/goddess/goddess_stage_9.glb`
   },
-  {
-    name: 'goddess10',
+  goddess10: {
     type: 'glb',
     path: `${mapPath}/goddess/goddess_stage_10.glb`
   },
@@ -143,6 +122,6 @@ const Sources: SourceInterface[] = [
   //   type: 'glb',
   //   path: `${mapPath}/settlements/settlement_sieged.glb`
   // },
-];
+};
 
 export default Sources;

@@ -1,4 +1,5 @@
 import {ContinentInterface} from './Continent';
+import {SourceKey} from "./Source";
 
 
 export type TilesType = Uint32Array;
@@ -19,6 +20,10 @@ export interface MapInterface {
   sea: {
     color: string | number,
     material: {
+      texture: SourceKey,
+      textureNormal: SourceKey,
+      rougMapTexture: SourceKey,
+      hightMapTexture: SourceKey
       displacementScale: number,
       roughness: number,
     },
@@ -33,7 +38,7 @@ export interface MapInterface {
     segmentsQty: {
       width: number,
       height: number,
-    }
+    },
     position: {
       x: number,
       y: number,

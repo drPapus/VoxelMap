@@ -1,5 +1,6 @@
 import {ColorRepresentation} from 'three';
 import {FaceInterface} from './Face';
+import {SourceKey} from './Source';
 
 export interface ConfigInterface {
   camera: {
@@ -23,15 +24,22 @@ export interface ConfigInterface {
       shadowCameraNear: number,
       shadowCameraFar: number,
     }
+    map: {
+      texture: SourceKey,
+      intensity: number,
+    }
   };
   world: {
+    trees: {
+      model: SourceKey,
+      color: ColorRepresentation,
+    }
     hoverEmisseve: ColorRepresentation,
     hoverEmisseveIntensity: number,
     disabledLandColor: ColorRepresentation,
     exploredLandColor: ColorRepresentation,
     exploredLandEmissive: ColorRepresentation,
     exploredLandEmissiveIntensity: number,
-    treesColor: ColorRepresentation,
     mountainColor: ColorRepresentation,
     selectionVoxelHeight: number,
     peakLevelColors: ColorRepresentation[],

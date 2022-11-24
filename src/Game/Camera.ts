@@ -6,7 +6,7 @@ import {GUI} from 'dat.gui';
 
 import Main from './Main';
 
-import {ConfigInterface} from './@types/ConfigInterface';
+import {ConfigInterface} from './@types/Config';
 
 export default class Camera {
   main: Main;

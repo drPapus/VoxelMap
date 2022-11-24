@@ -1,18 +1,21 @@
 import {MapInterface} from '../../@types/Map';
 import {getGeography} from '../../World/Continent/MapHelpers';
 
+export const woodTextureRepeat = {x: 48, y: 48};
+
 export default {
   name: 'Map 1',
   sea: {
     color: '#424d7c',
     material: {
-      displacementScale: .4,
+      texture: 'woodBaseColorTexture',
+      textureNormal: 'woodNormalTexture',
+      rougMapTexture: 'woodRougMapTexture',
+      hightMapTexture: 'woodHightMapTexture',
+      displacementScale: .6,
       roughness: .5,
     },
-    woodTextureRepeat: {
-      x: 48,
-      y: 48,
-    },
+    woodTextureRepeat: woodTextureRepeat,
     size: {
       width: 800,
       height: 800,

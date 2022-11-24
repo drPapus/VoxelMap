@@ -1,6 +1,6 @@
 import {
   Scene,
-  Color
+  Color, MeshStandardMaterial
 } from 'three';
 
 import Debug from './Utils/Debug';
@@ -16,14 +16,15 @@ import DefaultConfig from './Configs/DefaultConfig';
 import FirstMapSources from './Maps/FirstMap/Sources';
 import FirstMap from './Maps/FirstMap/FirstMap';
 
-import {SourceInterface} from './@types/Source';
-import {ConfigInterface} from './@types/ConfigInterface';
+import {SourcesType} from './@types/Source';
+import {ConfigInterface} from './@types/Config';
 import {MapInterface} from './@types/Map';
+import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 
 
 const Config: ConfigInterface = DefaultConfig;
 const Map: MapInterface = FirstMap;
-const Sources: SourceInterface[] = FirstMapSources;
+const Sources: SourcesType = FirstMapSources;
 let GameInstance: Main | null = null;
 
 
@@ -33,6 +34,7 @@ export default class Main {
   sizes!: Sizes;
   time!: Time;
   scene!: Scene;
+  cache: Record<string, MeshStandardMaterial | GLTF> = {};
   resources!: Resources;
   camera!: Camera;
   renderer!: Renderer;
@@ -44,24 +46,25 @@ export default class Main {
 
 
   constructor(_canvas?: Element) {
-    if (GameInstance) { return GameInstance; }
+    if (GameInstance) {return GameInstance;}
 
     console.log(this);
 
     GameInstance = this;
-    // tslint:disable-next-line:no-non-null-assertion
-    this.canvas = _canvas!;
+    this.canvas = _canvas as Element;
     this.config = Config;
     this.map = Map;
-
     this.setScene();
-
     this.debug = new Debug();
     this.sizes = new Sizes();
     this.time = new Time();
     this.resources = new Resources(Sources);
     this.camera = new Camera();
     this.renderer = new Renderer();
+    this.world = new World();
+    // this.controls = new Controls();
+    // this.raycaster = new Raycaster();
+    if (this.debug.active) {this.debug.run();}
 
     this.setEvents();
   }
@@ -74,23 +77,12 @@ export default class Main {
 
 
   setEvents() {
-    this.resources.addEventListener('ready', () => {
-      this.onResourcesLoaded();
-    });
     this.sizes.addEventListener('resize', () => {
       this.onResize();
     });
     this.time.addEventListener('tick', () => {
       this.onTick();
     });
-  }
-
-
-  onResourcesLoaded() {
-    this.world = new World();
-    this.controls = new Controls();
-    this.raycaster = new Raycaster();
-    if (this.debug.active) {this.debug.run();}
   }
 
 

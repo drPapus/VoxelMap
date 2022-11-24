@@ -1,4 +1,4 @@
-import {ConfigInterface} from '../@types/ConfigInterface';
+import {ConfigInterface} from '../@types/Config';
 
 const voxel = {
   size: 1,
@@ -27,15 +27,22 @@ export default {
       shadowMapSize: [512, 512],
       shadowCameraNear: .5,
       shadowCameraFar: .5,
+    },
+    map: {
+      texture: 'environmentMapTexture',
+      intensity: .33,
     }
   },
   world: {
+    trees: {
+      model: 'treeGlb',
+      color: '#0a591b',
+    },
     hoverEmisseve: '#ff0000',
     hoverEmisseveIntensity: 1,
     disabledLandColor: '#021554',
     exploredLandEmissive: '#b5d3cd',
     exploredLandEmissiveIntensity: .3,
-    treesColor: '#0a591b',
     mountainColor: '#f7efd3',
     selectionVoxelHeight: 2,
     peakLevelColors: [

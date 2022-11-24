@@ -1,9 +1,9 @@
-import {Line3, Vector2, Vector3} from 'three';
+import {Vector2} from 'three';
 import {ContinentInterface} from '../../@types/Continent';
 import geography from '../../../mocks/zones.json';
 import {TilesType, TilePositionType, PeakLevelsType} from '../../@types/Map';
-import {ConfigInterface} from '../../@types/ConfigInterface';
-import {lerp, randInt, clamp} from 'three/src/math/MathUtils';
+import {ConfigInterface} from '../../@types/Config';
+import {randInt} from "three/src/math/MathUtils";
 
 
 type ContinentBoxType = {
@@ -16,10 +16,11 @@ type ContinentBoxType = {
 
 export const DEFAULT_START_POSITION = 32760;
 
-
 export function getGeography(): ContinentInterface[] {
-  return geography.map(({id, name, positions}) => {
-    const tiles: Uint32Array = new Uint32Array(positions.length);
+  return geography.map(({id, name, positions, occultistsPosition}) => {
+    const tiles: Uint32Array = new Uint32Array(positions.length,);
+    const occulTiles: Uint32Array = new Uint32Array(occultistsPosition.length);
+   
     const startCoordinates = getCoordinates(Number(positions[0]));
     const continentBox: ContinentBoxType = {
       minX: startCoordinates.x,
@@ -38,13 +39,16 @@ export function getGeography(): ContinentInterface[] {
       tiles[i] = position;
     }
 
+    const statuses = ['active', 'explored', 'disabled'];
+
     return {
       id: String(id),
       name,
-      status: 'active' as ContinentInterface['status'],
+      status: statuses[randInt(0, 2)] as ContinentInterface['status'],
       landscape: {
         tiles,
-        peakLevels: getTilesLevel(continentBox, tiles)
+        occulTiles,
+        peakLevels: getTilesLevel(continentBox, tiles),
       }
     };
   });
@@ -106,38 +110,15 @@ export function getTilesLevel(
   const width = new Vector2(continentBox.minX, 0).distanceTo(new Vector2(continentBox.maxX, 0));
   const height = new Vector2(continentBox.minZ, 0).distanceTo(new Vector2(continentBox.maxZ, 0));
 
-  console.log(continentBox);
   for (const [index, position] of tiles.entries()) {
     const {x, z} = getCoordinates(position);
-
     const xFromMin = new Vector2(continentBox.minX, 0).distanceTo(new Vector2(x, 0));
     const zFromMin = new Vector2(continentBox.minZ, 0).distanceTo(new Vector2(z, 0));
-
-
-    const tmp = Math.ceil(
-      Math.sin(xFromMin / width) * 4
-    );
-    console.log(xFromMin, width, zFromMin, tmp);
-    // const tmp = Math.abs(Math.ceil(
-    //   Math.sin(
-    //   Math.sin(clamp(x, continentBox.minX, continentBox.maxX) / width) *
-    //     Math.sin(clamp(z, continentBox.minZ, continentBox.maxZ) / height)
-    //   ) * 4
-    // ));
-    // const tmp = Math.ceil(Math.abs(Math.sin(
-    //   (clamp(x, continentBox.minX, continentBox.maxX))
-    //   * (clamp(z, continentBox.minZ, continentBox.maxZ))
-    // ) * 4));
-    // const tmp = Math.ceil(
-    //   Math.abs(Math.sin(clamp(x, continentBox.minX, continentBox.maxX) / width) * 4) *
-    //   Math.abs(Math.sin(clamp(z, continentBox.minZ, continentBox.maxZ) / height) * 4)
-    // );
-      // (Math.abs(Math.sin(clamp(x, continentBox.minX, continentBox.maxX))) * 4
-      //   + Math.abs(Math.sin(clamp(z, continentBox.minZ, continentBox.maxZ))) * 4
-      // ) / 2);
-    // console.log({x, z},clamp(x, continentBox.minX, continentBox.maxX), continentBox, {width, height}, tmp);
-    // console.log(xFromMin, zFromMin, tmp, clamp(x, continentBox.minX, continentBox.maxX));
-    levels[index] = tmp;
+    levels[index] = Math.ceil(
+      Math.sin(xFromMin / width * Math.PI)
+      * Math.sin(zFromMin / height * Math.PI)
+      * 4 * .85
+    ) || 1;
   }
 
   return levels;

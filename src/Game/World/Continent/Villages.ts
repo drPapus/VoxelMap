@@ -1,5 +1,6 @@
+// @ts-nocheck
 import Main from '../../Main';
-import {LandCellInterface} from '../../@types/LandCellInterface';
+import {Tile} from '../../@types/Tile';
 import {GUI} from 'dat.gui';
 import {ContinentInterface} from '../../@types/Continent';
 import {GLTF} from 'three/examples/jsm/loaders/GLTFLoader';
@@ -20,10 +21,10 @@ export default class Villages {
   };
   debugFolder?: GUI;
   continent: ContinentInterface;
-  cells: LandCellInterface[];
+  cells: Tile[];
 
 
-  constructor(continent: ContinentInterface, cells: LandCellInterface[]) {
+  constructor(continent: ContinentInterface, cells: Tile[]) {
     this.main = new Main();
     this.map = this.main.map;
     this.scene = this.main.scene;

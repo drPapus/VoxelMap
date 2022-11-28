@@ -12,7 +12,7 @@ export default {
       textureNormal: 'woodNormalTexture',
       rougMapTexture: 'woodRougMapTexture',
       hightMapTexture: 'woodHightMapTexture',
-      displacementScale: .6,
+      displacementScale: .4,
       roughness: .5,
     },
     woodTextureRepeat: woodTextureRepeat,

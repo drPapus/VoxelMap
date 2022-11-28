@@ -16,11 +16,17 @@ import {
 import {ContinentInterface} from '../../@types/Continent';
 
 
+export function getCacheKeyForLandscapeMaterial(continentStatus: ContinentInterface['status']) {
+  return `landscape_material_${continentStatus}`;
+}
+
+
 export class VoxelLandscape {
   #main: Main;
   #config: Main['config'];
   #resources: Main['resources'];
   #map: Main['map'];
+  #cache: Main['cache'];
   #scene: Main['scene'];
   #continent: ContinentInterface;
   textures: Record<string, Texture> = {};
@@ -31,7 +37,7 @@ export class VoxelLandscape {
     indices: number[]
   };
   geometry!: BufferGeometry;
-  material!: MeshStandardMaterial;
+  #material!: MeshStandardMaterial;
   mesh!: Mesh;
 
 
@@ -40,6 +46,7 @@ export class VoxelLandscape {
     this.#config = this.#main.config;
     this.#resources = this.#main.resources;
     this.#scene = this.#main.scene;
+    this.#cache = this.#main.cache;
     this.#map = this.#main.map;
     this.#continent = continent;
     this.#voxel = this.#config.world.voxel;
@@ -59,12 +66,14 @@ export class VoxelLandscape {
     };
     for (const [index, position] of this.#continent.landscape.tiles.entries()) {
       const {x, z} = getCoordinates(position);
-      for (let y = 1; y <= this.#continent.landscape.peakLevels[index]; y++) {
+      for (let y = 0; y <= this.#continent.landscape.peakLevels[index]; y++) {
         // tslint:disable-next-line:no-non-null-assertion
         for (const {side, dir, corners} of this.#voxel.faces!) {
           if (
-            // Пропускаем верхние фейсы
+            // Skip top faces
             ['tt', 'tb'].includes(side)
+            // Skip bottom faces if continent not disabled
+            || (this.#continent.status !== 'disabled' && ['bb', 'bt'].includes(side))
             // Есть сосед - не рисуем грань
             || isNeighborTile(
                 this.#continent.landscape.tiles,
@@ -121,42 +130,48 @@ export class VoxelLandscape {
       await this.#resources.getSource(this.#map.sea.material.textureNormal) as Texture;
   }
 
-  // TODO implement material cache
+
   setMaterial() {
-    this.material = new MeshStandardMaterial();
-    this.material.roughness = 1;
+    const key = getCacheKeyForLandscapeMaterial(this.#continent.status);
+    if (this.#cache.hasOwnProperty(key)) {
+      this.#material = this.#cache[key] as MeshStandardMaterial;
+      return;
+    }
+    this.#material = this.#cache[key] = new MeshStandardMaterial();
+    this.#material.roughness = 1;
 
     switch (this.#continent.status) {
       case 'active':
-        this.material.color.set(this.#config.world.voxel.sideColor);
+        this.#material.color.set(this.#config.world.voxel.sideColor);
         break;
       case 'disabled':
-        this.material.color.set(this.#config.world.disabledLandColor);
-        this.material.transparent = true;
-        this.material.opacity = .3;
+        this.#material.color.set(this.#config.world.disabledLandColor);
+        this.#material.transparent = true;
+        this.#material.opacity = .3;
         break;
       case 'explored':
-        this.material.color.set(this.#config.world.voxel.sideColor);
-        this.material.emissive.set(this.#config.world.exploredLandEmissive);
-        this.material.emissiveIntensity = this.#config.world.exploredLandEmissiveIntensity;
+        this.#material.color.set(this.#config.world.voxel.sideColor);
+        this.#material.emissive.set(this.#config.world.exploredLandEmissive);
+        this.#material.emissiveIntensity = this.#config.world.exploredLandEmissiveIntensity;
         break;
     }
+    this.#material.color.convertSRGBToLinear();
 
     (async () => {
       await this.loadResources();
-      this.material.normalMap = this.textures.normalMap;
+      this.#material.normalMap = this.textures.normalMap;
+      this.#material.needsUpdate = true;
     })();
   }
 
 
   setMesh() {
-    this.mesh = new Mesh(this.geometry, this.material);
+    this.mesh = new Mesh(this.geometry, this.#material);
     this.mesh.name = 'land';
     this.mesh.layers.enable(1);
     this.mesh.receiveShadow = true;
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;
-
     this.#scene.add(this.mesh);
   }
 }

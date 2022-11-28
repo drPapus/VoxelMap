@@ -1,7 +1,8 @@
 import {
   Scene,
-  Color, MeshStandardMaterial
+  Color, MeshStandardMaterial, BufferGeometry, MeshBasicMaterial
 } from 'three';
+import {GLTF} from 'three/examples/jsm/loaders/GLTFLoader';
 
 import Debug from './Utils/Debug';
 import Sizes from './Utils/Sizes';
@@ -19,7 +20,6 @@ import FirstMap from './Maps/FirstMap/FirstMap';
 import {SourcesType} from './@types/Source';
 import {ConfigInterface} from './@types/Config';
 import {MapInterface} from './@types/Map';
-import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 
 
 const Config: ConfigInterface = DefaultConfig;
@@ -34,7 +34,10 @@ export default class Main {
   sizes!: Sizes;
   time!: Time;
   scene!: Scene;
-  cache: Record<string, MeshStandardMaterial | GLTF> = {};
+  cache: Record<
+    string,
+    MeshStandardMaterial | GLTF | BufferGeometry | MeshBasicMaterial
+  > = {};
   resources!: Resources;
   camera!: Camera;
   renderer!: Renderer;
@@ -62,8 +65,8 @@ export default class Main {
     this.camera = new Camera();
     this.renderer = new Renderer();
     this.world = new World();
-    // this.controls = new Controls();
-    // this.raycaster = new Raycaster();
+    this.controls = new Controls();
+    this.raycaster = new Raycaster();
     if (this.debug.active) {this.debug.run();}
 
     this.setEvents();

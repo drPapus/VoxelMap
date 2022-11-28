@@ -34,13 +34,16 @@ export interface ConfigInterface {
       model: SourceKey,
       color: ColorRepresentation,
     }
+    mountains: {
+      model: SourceKey,
+      color: ColorRepresentation,
+    },
     hoverEmisseve: ColorRepresentation,
     hoverEmisseveIntensity: number,
     disabledLandColor: ColorRepresentation,
     exploredLandColor: ColorRepresentation,
     exploredLandEmissive: ColorRepresentation,
     exploredLandEmissiveIntensity: number,
-    mountainColor: ColorRepresentation,
     selectionVoxelHeight: number,
     peakLevelColors: ColorRepresentation[],
     voxel: {

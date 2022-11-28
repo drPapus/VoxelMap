@@ -2,7 +2,7 @@ import {
   Mesh,
   MeshStandardMaterial,
 } from 'three';
-import {LandCellInterface} from './LandCellInterface';
+import {TileInterface} from './Tile';
 import {SourceInterface} from './Source';
 import {TilesType, PeakLevelsType} from './Map';
 
@@ -38,5 +38,5 @@ export interface ContinentInterface {
   }[];
   voxelMatrix?: any;
   boxSize?: number;
-  cells?: Record<LandCellInterface['mesh']['id'], LandCellInterface>;
+  tiles?: Record<number, TileInterface>;
 }

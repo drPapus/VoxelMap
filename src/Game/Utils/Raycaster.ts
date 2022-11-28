@@ -1,5 +1,5 @@
-// @ts-nocheck
 import {
+  BufferGeometry,
   Mesh,
   Raycaster as ThreeRaycaster,
   Vector2,
@@ -13,31 +13,31 @@ import Continents from '../World/Continents';
 
 export default class Raycaster {
   instance: ThreeRaycaster;
-  main: Main;
-  camera: Main['camera'];
-  sizes: Main['sizes'];
-  continents: Continents;
-  controls: Main['controls'];
-  selectionVoxel: SelectionVoxel;
-  pointer: Vector2;
-  intersectObjects!: Mesh[];
-  intersectedLand?: Mesh['id'];
-  intersectedCell?: Mesh['id'];
-  selectedCell: any;
+  #main: Main;
+  #camera: Main['camera'];
+  #sizes: Main['sizes'];
+  #continents: Continents;
+  #controls: Main['controls'];
+  #selectionVoxel: SelectionVoxel;
+  #pointer: Vector2;
+  #intersectObjects: Mesh[] = [];
+  #intersectedLand?: Mesh['id'];
+  #intersectedTile?: Mesh['id'];
+  #selectedCell: any;
 
   constructor() {
-    this.main = new Main();
-    this.camera = this.main.camera;
-    this.sizes = this.main.sizes;
-    this.controls = this.main.controls;
+    this.#main = new Main();
+    this.#camera = this.#main.camera;
+    this.#sizes = this.#main.sizes;
+    this.#controls = this.#main.controls;
     // tslint:disable-next-line:no-non-null-assertion
-    this.selectionVoxel = this.controls!.selectionVoxel;
+    this.#selectionVoxel = this.#controls!.selectionVoxel;
     this.instance = new ThreeRaycaster();
-    this.pointer = new Vector2();
-    this.intersectedLand = undefined;
-    this.intersectedCell = undefined;
+    this.#pointer = new Vector2();
+    this.#intersectedLand = undefined;
+    this.#intersectedTile = undefined;
     // tslint:disable-next-line:no-non-null-assertion
-    this.continents = this.main.world!.continents;
+    this.#continents = this.#main.world!.continents;
 
     this.instance.layers.set(1);
     this.setIntersectObjects();
@@ -46,102 +46,99 @@ export default class Raycaster {
       this.onPointerMove(e);
     });
 
-    window.addEventListener('dblclick', () => {
-      this.onDblclick();
-    });
+    // window.addEventListener('dblclick', () => {
+    //   this.onDblclick();
+    // });
   }
 
 
   setIntersectObjects() {
-    this.intersectObjects = [];
-    for (const continent of Object.values(this.continents.continents)) {
+    for (const continent of Object.values(this.#continents.continents)) {
       if (continent.status === 'disabled') {continue;}
-      // tslint:disable-next-line:no-non-null-assertion
-      this.intersectObjects.push(continent.landscape.mesh!);
+      this.#intersectObjects.push(continent.landscape.mesh as Mesh);
     }
   }
 
 
   update() {
-    if (!this.intersectObjects.length) {return;}
-
-    this.instance.setFromCamera(this.pointer, this.camera.instance);
-    const intersects = this.instance.intersectObjects(this.intersectObjects);
-
-    if (!intersects.length) {
-      if (this.intersectedLand) {
-        this.continents.unsetIntersected(this.intersectedLand);
-        this.intersectedLand = undefined;
-      }
-      if (this.intersectedCell) {
-        this.intersectedCell = undefined;
-        if (!this.selectionVoxel.selected) {
-          this.selectionVoxel.setHidden();
-        }
-      }
-      return;
-    }
-
-    const intersectLand =
-      intersects[0].object.name === 'land'
-        ? intersects[0].object.id
-        // tslint:disable-next-line:no-non-null-assertion
-        : intersects[0].object.parent!.id;
-
-    const intersectCell =
-      intersects[0].object.name === 'landCell'
-        ? intersects[0].object.id
-        : undefined;
-
-    if (this.intersectedLand !== intersectLand) {
-      if (this.intersectedLand) {
-        this.continents.unsetIntersected(this.intersectedLand);
-      }
-      this.intersectedLand = intersectLand;
-      this.continents.setIntersected(this.intersectedLand);
-    }
-
-    if (intersectCell) {
-      this.intersectedCell = intersectCell;
-      if (!this.selectionVoxel.selected) {
-        this.setSelectionVoxelPosition();
-        this.selectionVoxel.setVisible();
-      }
-    } else {
-      this.intersectedCell = undefined;
-      if (!this.selectionVoxel.selected) {
-        this.selectionVoxel.setHidden();
-      }
-    }
+    // if (!this.#intersectObjects.length) {return;}
+    //
+    // this.instance.setFromCamera(this.#pointer, this.#camera.instance);
+    // const intersects = this.instance.intersectObjects(this.#intersectObjects);
+    //
+    // if (!intersects.length) {
+    //   if (this.#intersectedLand) {
+    //     this.#continents.unsetIntersected(this.#intersectedLand);
+    //     this.#intersectedLand = undefined;
+    //   }
+    //   if (this.#intersectedTile) {
+    //     this.#intersectedTile = undefined;
+    //     if (!this.#selectionVoxel.selected) {
+    //       this.#selectionVoxel.setHidden();
+    //     }
+    //   }
+    //   return;
+    // }
+    //
+    // const intersectLand =
+    //   intersects[0].object.name === 'land'
+    //     ? intersects[0].object.id
+    //     // tslint:disable-next-line:no-non-null-assertion
+    //     : intersects[0].object.parent!.id;
+    //
+    // const intersectCell =
+    //   intersects[0].object.name === 'landCell'
+    //     ? intersects[0].object.id
+    //     : undefined;
+    //
+    // if (this.intersectedLand !== intersectLand) {
+    //   if (this.intersectedLand) {
+    //     this.continents.unsetIntersected(this.intersectedLand);
+    //   }
+    //   this.intersectedLand = intersectLand;
+    //   this.continents.setIntersected(this.intersectedLand);
+    // }
+    //
+    // if (intersectCell) {
+    //   this.intersectedCell = intersectCell;
+    //   if (!this.selectionVoxel.selected) {
+    //     this.setSelectionVoxelPosition();
+    //     this.selectionVoxel.setVisible();
+    //   }
+    // } else {
+    //   this.intersectedCell = undefined;
+    //   if (!this.selectionVoxel.selected) {
+    //     this.selectionVoxel.setHidden();
+    //   }
+    // }
   }
 
 
   onPointerMove(e: PointerEvent) {
-    this.pointer.x = (e.clientX / this.sizes.width) * 2 - 1;
-    this.pointer.y = -(e.clientY / this.sizes.height) * 2 + 1;
+    this.#pointer.x = (e.clientX / this.#sizes.width) * 2 - 1;
+    this.#pointer.y = -(e.clientY / this.#sizes.height) * 2 + 1;
   }
 
 
-  onDblclick() {
-    if (this.intersectedCell) {
-      if (this.selectedCell !== this.intersectedCell) {
-        this.selectedCell = this.intersectedCell;
-        this.setSelectionVoxelPosition();
-        this.selectionVoxel.selected = true;
-      }
-    } else {
-        if (this.selectedCell) {
-          this.selectedCell = undefined;
-          this.selectionVoxel.selected = false;
-          this.selectionVoxel.setHidden();
-        }
-    }
-  }
-
-
-  setSelectionVoxelPosition() {
-    // tslint:disable-next-line:no-non-null-assertion
-    const {x, y, z} = this.continents.continentByMeshId[this.intersectedLand!].cells![this.intersectedCell!].position;
-    this.selectionVoxel.setPosition(x, y, z);
-  }
+  // onDblclick() {
+  //   if (this.intersectedCell) {
+  //     if (this.selectedCell !== this.intersectedCell) {
+  //       this.selectedCell = this.intersectedCell;
+  //       this.setSelectionVoxelPosition();
+  //       this.selectionVoxel.selected = true;
+  //     }
+  //   } else {
+  //       if (this.selectedCell) {
+  //         this.selectedCell = undefined;
+  //         this.selectionVoxel.selected = false;
+  //         this.selectionVoxel.setHidden();
+  //       }
+  //   }
+  // }
+  //
+  //
+  // setSelectionVoxelPosition() {
+  //   const {x, y, z} = this.continents.continentByMeshId[this.intersectedLand!].cells![this.intersectedCell!].position;
+  //   this.selectionVoxel.setPosition(x, y, z);
+  // }
 }

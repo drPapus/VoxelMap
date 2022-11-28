@@ -3,7 +3,7 @@ import {ContinentInterface} from '../../@types/Continent';
 import geography from '../../../mocks/zones.json';
 import {TilesType, TilePositionType, PeakLevelsType} from '../../@types/Map';
 import {ConfigInterface} from '../../@types/Config';
-import {randInt} from "three/src/math/MathUtils";
+import {randInt} from 'three/src/math/MathUtils';
 
 
 type ContinentBoxType = {
@@ -16,11 +16,11 @@ type ContinentBoxType = {
 
 export const DEFAULT_START_POSITION = 32760;
 
+
 export function getGeography(): ContinentInterface[] {
+  // geography.length = 2;
   return geography.map(({id, name, positions, occultistsPosition}) => {
-    const tiles: Uint32Array = new Uint32Array(positions.length,);
-    const occulTiles: Uint32Array = new Uint32Array(occultistsPosition.length);
-   
+    const tiles: Uint32Array = new Uint32Array(positions.length);
     const startCoordinates = getCoordinates(Number(positions[0]));
     const continentBox: ContinentBoxType = {
       minX: startCoordinates.x,
@@ -47,7 +47,6 @@ export function getGeography(): ContinentInterface[] {
       status: statuses[randInt(0, 2)] as ContinentInterface['status'],
       landscape: {
         tiles,
-        occulTiles,
         peakLevels: getTilesLevel(continentBox, tiles),
       }
     };
@@ -80,10 +79,7 @@ export function isNeighborTile(
   if (typeof position.y !== 'number') {throw new Error('Y doesn\'t exists');}
   const position32Bit = get32BitPosition(position);
   return tiles.includes(position32Bit)
-    && (
-      position.y > 0
-      && position.y <= peakLevels[tiles.indexOf(position32Bit)]
-    );
+      && position.y <= peakLevels[tiles.indexOf(position32Bit)];
 }
 
 
@@ -114,11 +110,11 @@ export function getTilesLevel(
     const {x, z} = getCoordinates(position);
     const xFromMin = new Vector2(continentBox.minX, 0).distanceTo(new Vector2(x, 0));
     const zFromMin = new Vector2(continentBox.minZ, 0).distanceTo(new Vector2(z, 0));
-    levels[index] = Math.ceil(
+    levels[index] = Math.floor(
       Math.sin(xFromMin / width * Math.PI)
       * Math.sin(zFromMin / height * Math.PI)
       * 4 * .85
-    ) || 1;
+    );
   }
 
   return levels;

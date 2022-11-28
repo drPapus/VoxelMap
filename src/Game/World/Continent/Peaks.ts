@@ -31,6 +31,8 @@ export default class Peaks {
   #voxel: Main['config']['world']['voxel'];
   #cache: Main['cache'];
   #textures: Record<string, Texture> = {};
+  #landscape: Mesh;
+  #material: Record<level, MeshStandardMaterial> = {};
   attributes: Record<level, {
     positions: number[],
     normals: number[],
@@ -40,10 +42,11 @@ export default class Peaks {
   meshes!: Mesh[];
 
 
-  constructor(continent: ContinentInterface) {
+  constructor(continent: ContinentInterface, landscape: Mesh) {
     this.#main = new Main();
     this.#config = this.#main.config;
     this.#map = this.#main.map;
+    this.#landscape = landscape;
     this.#cache = this.#main.cache;
     this.#resources = this.#main.resources;
     this.#continent = continent;
@@ -158,17 +161,19 @@ export default class Peaks {
   setMaterial() {
     for (const level of Object.keys(this.geometries)) {
       const key = getCacheKeyForPeakMaterial(level, this.#continent.status);
-      if (this.#cache[key]) {continue;}
+
+      if (this.#cache.hasOwnProperty(key)) {
+        this.#material[level] = this.#cache[key] as MeshStandardMaterial;
+        continue;
+      }
 
       const material = new MeshStandardMaterial();
-      // material.map = this.textures.map;
-      // material.displacementMap = this.textures.woodHightMapTexture
       switch (this.#continent.status) {
         case 'active':
-          material.color.set(this.#config.world.peakLevelColors[+level - 1]);
+          material.color.set(this.#config.world.peakLevelColors[+level]);
           break;
         case 'explored':
-          material.color.set(this.#config.world.peakLevelColors[+level - 1]);
+          material.color.set(this.#config.world.peakLevelColors[+level]);
           material.emissive.set(this.#config.world.exploredLandEmissive);
           material.emissiveIntensity = this.#config.world.exploredLandEmissiveIntensity;
           break;
@@ -178,14 +183,16 @@ export default class Peaks {
           material.opacity = .3;
           break;
       }
+      material.color.convertSRGBToLinear();
 
       (async () => {
         await this.loadResources();
         material.map = this.#textures.map;
+        material.needsUpdate = true;
         // material.displacementMap = this.#textures.woodHightMapTexture;
       })();
 
-      this.#cache[key] = material;
+      this.#material[level] = this.#cache[key] = material;
     }
   }
 
@@ -193,13 +200,11 @@ export default class Peaks {
   setMesh() {
     this.meshes = [];
     for (const level of Object.keys(this.geometries)) {
-      const mesh = new Mesh(
-        this.geometries[level],
-        this.#cache[getCacheKeyForPeakMaterial(level, this.#continent.status)] as MeshStandardMaterial
-      );
+      const mesh = new Mesh(this.geometries[level], this.#material[level]);
       mesh.name = 'peak';
       mesh.receiveShadow = true;
       this.meshes.push(mesh);
+      this.#landscape.add(mesh);
     }
   }
 }

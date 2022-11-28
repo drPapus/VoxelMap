@@ -38,12 +38,15 @@ export default {
       model: 'treeGlb',
       color: '#0a591b',
     },
+    mountains: {
+      model: 'mountainGlb',
+      color: '#f7efd3',
+    },
     hoverEmisseve: '#ff0000',
     hoverEmisseveIntensity: 1,
     disabledLandColor: '#021554',
     exploredLandEmissive: '#b5d3cd',
     exploredLandEmissiveIntensity: .3,
-    mountainColor: '#f7efd3',
     selectionVoxelHeight: 2,
     peakLevelColors: [
       // индекс = этаж

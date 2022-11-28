@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Box3,
   BoxGeometry, BoxHelper,
@@ -9,7 +10,7 @@ import {GLTF} from 'three/examples/jsm/loaders/GLTFLoader';
 import {GUI} from 'dat.gui';
 
 import Main from '../../Main';
-import {LandCellInterface} from '../../@types/LandCellInterface';
+import {Tile} from '../../@types/Tile';
 import {ContinentInterface} from '../../@types/Continent';
 
 
@@ -27,9 +28,9 @@ export default class Goddess {
   };
   debugFolder?: GUI;
   continent: ContinentInterface;
-  cells: LandCellInterface[];
+  cells: Tile[];
 
-  constructor(continent: ContinentInterface, cells: LandCellInterface[]) {
+  constructor(continent: ContinentInterface, cells: Tile[]) {
     this.main = new Main();
     this.map = this.main.map;
     this.scene = this.main.scene;

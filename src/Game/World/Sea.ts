@@ -58,12 +58,11 @@ export default class Sea {
       await this.#resources.getSource(this.#map.sea.material.hightMapTexture) as Texture;
   }
 
-
   setMaterial() {
     this.material = new MeshStandardMaterial();
     this.material.displacementScale = this.#map.sea.material.displacementScale;
     this.material.roughness = this.#map.sea.material.roughness;
-    this.material.color = new Color(this.#map.sea.color);
+    this.material.color = new Color(this.#map.sea.color).convertSRGBToLinear();
 
     (async () => {
       await this.setTextures();

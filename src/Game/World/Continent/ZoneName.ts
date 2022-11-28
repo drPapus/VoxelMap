@@ -1,11 +1,10 @@
-import { BoxGeometry, ConeGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, Vector3 } from 'three';
+import { ConeGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial } from 'three';
 import { Font } from 'three/examples/jsm/loaders/FontLoader'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
 import Main from '../../Main';
 import gentilistFont from 'three/examples/fonts/gentilis_bold.typeface.json'
 import { ContinentInterface } from '../../@types/Continent';
 import {getCoordinates, getVertexPositionForBufferAttributes} from './MapHelpers';
-import { geography } from '../../../mocks/geography';
 import getVoxelFaces from './VoxelFaces';
 
 
@@ -46,7 +45,7 @@ export default class ZoneName {
   }
 
   setCone(){
-    this.coneGeometry = new ConeGeometry( 1, 20, 32 );
+   // this.coneGeometry = new ConeGeometry( 1, 10, 32 );
     
   }
 
@@ -63,13 +62,13 @@ export default class ZoneName {
 
   setMaterial() {  
     this.material = new MeshStandardMaterial()
-    this.coneMaterial = new MeshBasicMaterial( {color: 0xffff00} );
+    //this.coneMaterial = new MeshBasicMaterial( {color: 0xffff00} );
    
   }
 
   setMesh() {
-    //this.mesh = new Mesh(this.geometry, this.material);
-    this.mesh = new Mesh( this.coneGeometry, this.coneMaterial );
+    this.mesh = new Mesh(this.geometry, this.material);
+    //this.mesh = new Mesh( this.coneGeometry, this.coneMaterial );
     
     for (const occulPos of this.continent.landscape.tiles) {
       const {x, z} =  getCoordinates(Number(occulPos))
@@ -79,12 +78,15 @@ export default class ZoneName {
                 {x: 0, y: 0, z: 0},
                 {x: x, y: 0, z: z}
             )
+          //  console.log(position)
         this.mesh.castShadow = true
-       // this.mesh.rotation.x = Math.PI * -.5
+        this.mesh.rotation.x = Math.PI * -.5
         this.mesh.position.y = 5
         this.mesh.position.z = position[0]
         this.mesh.position.x = position[2]
+        
         this.scene.add(this.mesh);
+      
     }
   }
 }

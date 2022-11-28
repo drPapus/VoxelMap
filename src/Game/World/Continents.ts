@@ -14,6 +14,7 @@ import Trees from './Continent/Trees';
 // import Villages from './Continent/Villages';
 // import Goddess from './Continent/Goddess';
 import Mountains from './Continent/Mountains';
+import ZoneName from './Continent/ZoneName';
 
 
 export default class Continents {
@@ -56,13 +57,17 @@ export default class Continents {
       let tiles;
       let trees;
       let mountains;
+      let zoneName
 
       if (continent.status !== 'disabled') {
         tiles = new Tiles(continent, voxelLandscape.mesh);
         trees = new Trees(peaks, continent.status, voxelLandscape.mesh);
         mountains = new Mountains(peaks, continent.status, voxelLandscape.mesh);
+        
         // villages = continent.village ? new Villages(continent, Object.values(cells.cells)) : villages
         // goddesses = continent.goddess ? new Goddess(continent, Object.values(cells.cells)) : goddesses
+      } else {
+        zoneName = new ZoneName(continent)
       }
 
       this.continents[continent.id] = continent;

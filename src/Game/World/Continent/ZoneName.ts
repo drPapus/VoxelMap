@@ -48,7 +48,7 @@ export default class ZoneName {
    // this.coneGeometry = new ConeGeometry( 1, 10, 32 );
     
   }
-
+  
   setGeometry() {
     const nameLand = this.continent.name
     this.font = new Font(gentilistFont) 

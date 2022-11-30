@@ -44,6 +44,7 @@ export default class Renderer {
     // this.instance.toneMappingExposure = 1.75
     // this.instance.setClearColor('#211d20')
     this.instance.setPixelRatio(Math.min(this.#sizes.pixelRatio, 2));
+    console.log('Renderer info', this.instance.info);
   }
 
 

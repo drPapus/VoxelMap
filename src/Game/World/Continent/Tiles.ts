@@ -1,11 +1,12 @@
 import {
   BufferAttribute,
-  BufferGeometry, Color, InstancedMesh, Material,
+  BufferGeometry, InstancedMesh,
   Mesh,
   MeshBasicMaterial, Object3D, Vector3,
 } from 'three';
 
 import Main from '../../Main';
+import Cache from '../../Utils/Cache';
 import VoxelFaces from './VoxelFaces';
 import {ContinentInterface} from '../../@types/Continent';
 import {TileInterface} from '../../@types/Tile';
@@ -23,13 +24,16 @@ export function getCacheKeyForTileGeometry() {
 }
 
 
+export const tilesMeshName = 'tiles';
+const fixYFighting = 0.001;
+
+
 export default class Tiles {
   #main: Main;
   #config: Main['config'];
   #map: Main['map'];
   #continent: ContinentInterface;
   #landscape: Mesh;
-  #cache: Main['cache'];
   #voxel: Main['config']['world']['voxel'];
   #attributes!: {
     positions: number[],
@@ -39,15 +43,6 @@ export default class Tiles {
   #geometry!: BufferGeometry;
   mesh!: InstancedMesh;
   #material!: MeshBasicMaterial;
-  #tmpIndices: {
-    cell: number,
-    row: number
-  }[] = [];
-  #tmpCellStartPositions: {
-    x: number,
-    y: number,
-    z: number
-  }[] = [];
   tiles: TileInterface[] = [];
 
 
@@ -55,7 +50,6 @@ export default class Tiles {
     this.#main = new Main();
     this.#config = this.#main.config;
     this.#map = this.#main.map;
-    this.#cache = this.#main.cache;
     this.#landscape = landscape;
     this.#continent = continent;
     this.#voxel = this.#config.world.voxel;
@@ -74,7 +68,7 @@ export default class Tiles {
       normals: [],
       indices: [],
     };
-    for (const {side, dir, corners} of (this.#voxel.faces as FaceInterface[])) {
+    for (const {dir, corners} of (this.#voxel.faces as FaceInterface[])) {
       const ndx = this.#attributes.positions.length / 3;
       for (const pos of corners) {
         this.#attributes.positions.push(
@@ -97,12 +91,13 @@ export default class Tiles {
 
   setGeometry() {
     const key = getCacheKeyForTileGeometry();
-    if (this.#cache.hasOwnProperty(key)) {
-      this.#geometry = this.#cache[key] as BufferGeometry;
+    if (Cache.isExist(key)) {
+      this.#geometry = Cache.get(key) as BufferGeometry;
       return;
     }
     this.generateGeometryDataForCell();
-    this.#geometry = this.#cache[key] = new BufferGeometry();
+    this.#geometry = new BufferGeometry();
+    Cache.add(key, this.#geometry);
     this.#geometry.setAttribute(
       'position',
       new BufferAttribute(new Float32Array(this.#attributes.positions), 3)
@@ -117,18 +112,20 @@ export default class Tiles {
 
   setMaterial() {
     const key = getCacheKeyForTileMaterial();
-    if (this.#cache.hasOwnProperty(key)) {
-      this.#material = this.#cache[key] as MeshBasicMaterial;
+    if (Cache.isExist(key)) {
+      this.#material = Cache.get(key) as MeshBasicMaterial;
       return;
     }
-    this.#material = this.#cache[key] = new MeshBasicMaterial();
+
+    this.#material = new MeshBasicMaterial();
     this.#material.visible = false;
+    Cache.add(key, this.#material);
   }
 
 
   setMesh() {
     this.mesh = new InstancedMesh(this.#geometry, this.#material, this.#continent.landscape.tiles.length);
-    this.mesh.name = 'tiles';
+    this.mesh.name = tilesMeshName;
     this.mesh.layers.enable(1);
 
     const _position = new Vector3();
@@ -147,7 +144,7 @@ export default class Tiles {
       this.mesh.setMatrixAt(index, _dummy.matrix);
     }
 
-    this.mesh.position.y += .001; // fix Z fighting
+    this.mesh.position.y += fixYFighting;
     this.#landscape.add(this.mesh);
   }
 
@@ -160,7 +157,7 @@ export default class Tiles {
         position: tile,
         center: getVertexPositionForBufferAttributes(
           this.#voxel,
-          {x: 0, y: 0, z: 0},
+          {x: 0, y: this.#voxel.depth, z: 0},
           {x, y, z}
         )
       });

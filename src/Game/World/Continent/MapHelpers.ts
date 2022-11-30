@@ -18,7 +18,7 @@ export const DEFAULT_START_POSITION = 32760;
 
 
 export function getGeography(): ContinentInterface[] {
-  // geography.length = 2;
+  // geography.length = 10;
   return geography.map(({id, name, positions, occultistsPosition}) => {
     const tiles: Uint32Array = new Uint32Array(positions.length);
     const startCoordinates = getCoordinates(Number(positions[0]));

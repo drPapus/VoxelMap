@@ -1,5 +1,3 @@
-import {MeshStandardMaterial} from 'three';
-
 import Environment from './Environment';
 import Sea from './Sea';
 import Continents from './Continents';

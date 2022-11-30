@@ -47,7 +47,7 @@ export default {
     disabledLandColor: '#021554',
     exploredLandEmissive: '#b5d3cd',
     exploredLandEmissiveIntensity: .3,
-    selectionVoxelHeight: 2,
+    selectionVoxelDepth: 2,
     peakLevelColors: [
       // индекс = этаж
       '#51936f', // 1

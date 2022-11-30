@@ -2,13 +2,11 @@ import {
   FloatType,
   Texture,
   TextureLoader,
-  DataTexture,
 } from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {RGBELoader} from 'three/examples/jsm/loaders/RGBELoader';
 
-import {SourceInterface, SourceKey, SourcesType, SourceType} from '../@types/Source';
-import {GLTF} from 'three/examples/jsm/loaders/GLTFLoader';
+import {SourceKey, SourcesType, SourceType} from '../@types/Source';
 import {setTextureRepeating} from './ResourcesHelpers';
 
 

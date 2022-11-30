@@ -1,5 +1,4 @@
 import {
-  BufferGeometry,
   Mesh,
   Raycaster as ThreeRaycaster,
   Vector2,
@@ -7,8 +6,11 @@ import {
 
 import Main from '../Main';
 
+import {tilesMeshName} from '../World/Continent/Tiles';
+import {voxelLandscapeMeshName} from '../World/Continent/VoxelLandscape';
 import SelectionVoxel from '../Controls/SelectionVoxel';
 import Continents from '../World/Continents';
+import {getCoordinates} from '../World/Continent/MapHelpers';
 
 
 export default class Raycaster {
@@ -22,8 +24,8 @@ export default class Raycaster {
   #pointer: Vector2;
   #intersectObjects: Mesh[] = [];
   #intersectedLand?: Mesh['id'];
-  #intersectedTile?: Mesh['id'];
-  #selectedCell: any;
+  #intersectedTile?: number;
+  #selectedTile?: number;
 
   constructor() {
     this.#main = new Main();
@@ -46,9 +48,9 @@ export default class Raycaster {
       this.onPointerMove(e);
     });
 
-    // window.addEventListener('dblclick', () => {
-    //   this.onDblclick();
-    // });
+    window.addEventListener('dblclick', () => {
+      this.onDblclick();
+    });
   }
 
 
@@ -61,56 +63,64 @@ export default class Raycaster {
 
 
   update() {
-    // if (!this.#intersectObjects.length) {return;}
-    //
-    // this.instance.setFromCamera(this.#pointer, this.#camera.instance);
-    // const intersects = this.instance.intersectObjects(this.#intersectObjects);
-    //
-    // if (!intersects.length) {
-    //   if (this.#intersectedLand) {
-    //     this.#continents.unsetIntersected(this.#intersectedLand);
-    //     this.#intersectedLand = undefined;
-    //   }
-    //   if (this.#intersectedTile) {
-    //     this.#intersectedTile = undefined;
-    //     if (!this.#selectionVoxel.selected) {
-    //       this.#selectionVoxel.setHidden();
-    //     }
-    //   }
-    //   return;
-    // }
-    //
-    // const intersectLand =
-    //   intersects[0].object.name === 'land'
-    //     ? intersects[0].object.id
-    //     // tslint:disable-next-line:no-non-null-assertion
-    //     : intersects[0].object.parent!.id;
-    //
-    // const intersectCell =
-    //   intersects[0].object.name === 'landCell'
-    //     ? intersects[0].object.id
-    //     : undefined;
-    //
-    // if (this.intersectedLand !== intersectLand) {
-    //   if (this.intersectedLand) {
-    //     this.continents.unsetIntersected(this.intersectedLand);
-    //   }
-    //   this.intersectedLand = intersectLand;
-    //   this.continents.setIntersected(this.intersectedLand);
-    // }
-    //
-    // if (intersectCell) {
-    //   this.intersectedCell = intersectCell;
-    //   if (!this.selectionVoxel.selected) {
-    //     this.setSelectionVoxelPosition();
-    //     this.selectionVoxel.setVisible();
-    //   }
-    // } else {
-    //   this.intersectedCell = undefined;
-    //   if (!this.selectionVoxel.selected) {
-    //     this.selectionVoxel.setHidden();
-    //   }
-    // }
+    if (!this.#intersectObjects.length) {return;}
+
+    this.instance.setFromCamera(this.#pointer, this.#camera.instance);
+    const intersects = this.instance.intersectObjects(this.#intersectObjects);
+
+    if (!intersects.length) {
+      this.clear();
+      return;
+    }
+
+    const intersectLand =
+      intersects[0].object.name === voxelLandscapeMeshName
+        ? intersects[0].object.id
+        : (intersects[0].object.parent as Mesh).id;
+
+    const intersectTile =
+      intersects[0].object.name === tilesMeshName
+        ? intersects[0].instanceId
+        : undefined;
+
+    if (this.#intersectedLand !== intersectLand) {
+      if (this.#intersectedLand) {
+        this.#continents.setCondition(this.#intersectedLand, 'default');
+      }
+      this.#intersectedLand = intersectLand;
+      this.#continents.setCondition(this.#intersectedLand, 'intersected');
+    }
+
+    if (intersectTile !== undefined && intersectTile !== this.#intersectedTile) {
+      this.#intersectedTile = intersectTile;
+
+      if (!this.#selectionVoxel.selected) {
+        this.setSelectionVoxelPosition();
+        this.#selectionVoxel.setVisible();
+      }
+    } else if (intersectTile === undefined && this.#intersectedTile !== undefined) {
+      this.#intersectedTile = undefined;
+
+      if (!this.#selectionVoxel.selected) {
+        this.#selectionVoxel.setHidden();
+      }
+    }
+  }
+
+
+  clear() {
+    if (this.#intersectedLand) {
+      this.#continents.setCondition(this.#intersectedLand, 'default');
+      this.#intersectedLand = undefined;
+    }
+
+    if (this.#intersectedTile !== undefined) {
+      this.#intersectedTile = undefined;
+
+      if (!this.#selectionVoxel.selected) {
+        this.#selectionVoxel.setHidden();
+      }
+    }
   }
 
 
@@ -120,25 +130,57 @@ export default class Raycaster {
   }
 
 
-  // onDblclick() {
-  //   if (this.intersectedCell) {
-  //     if (this.selectedCell !== this.intersectedCell) {
-  //       this.selectedCell = this.intersectedCell;
-  //       this.setSelectionVoxelPosition();
-  //       this.selectionVoxel.selected = true;
-  //     }
-  //   } else {
-  //       if (this.selectedCell) {
-  //         this.selectedCell = undefined;
-  //         this.selectionVoxel.selected = false;
-  //         this.selectionVoxel.setHidden();
-  //       }
-  //   }
-  // }
-  //
-  //
-  // setSelectionVoxelPosition() {
-  //   const {x, y, z} = this.continents.continentByMeshId[this.intersectedLand!].cells![this.intersectedCell!].position;
-  //   this.selectionVoxel.setPosition(x, y, z);
-  // }
+  onDblclick() {
+    if (this.#intersectedTile) {
+      if (this.#selectedTile !== this.#intersectedTile) {
+        this.#selectedTile = this.#intersectedTile;
+        this.setSelectionVoxelPosition();
+        this.#selectionVoxel.selected = true;
+
+        // TODO DELETE ===============================
+        
+        // console.log('selected', {
+        //   position:
+        //     // tslint:disable-next-line:no-non-null-assertion
+        //     this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
+        //   ,
+        //   coordinates: getCoordinates(
+        //     // tslint:disable-next-line:no-non-null-assertion
+        //     this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
+        //   )
+        // });
+        // TODO END DELETE ==============================
+      }
+    } else {
+        if (this.#selectedTile) {
+          this.#selectedTile = undefined;
+          this.#selectionVoxel.selected = false;
+          this.#selectionVoxel.setHidden();
+        }
+    }
+  }
+
+
+  setSelectionVoxelPosition() {
+    // tslint:disable:no-non-null-assertion
+    const position =
+      this.#continents
+        .continentByMeshId[this.#intersectedLand!]
+        .tiles![this.#intersectedTile!]
+        .center;
+
+    // TODO DELETE ===============================
+    
+    // console.log('hover', {
+    //   position:
+    //     this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
+    //   ,
+    //   coordinates: getCoordinates(
+    //     this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
+    //   )
+    // });
+    // TODO END DELETE ==============================
+
+    this.#selectionVoxel.setPosition(...position);
+  }
 }

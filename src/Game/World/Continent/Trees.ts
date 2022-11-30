@@ -4,10 +4,11 @@ import {
   Vector3,
   Matrix4,
   MeshStandardMaterial,
-  BufferGeometry, Object3D, WebGLRenderer,
+  BufferGeometry,
+  Object3D,
+  Color,
 } from 'three';
 import {
-  randInt,
   randFloat
 } from 'three/src/math/MathUtils';
 import {mergeBufferGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils';
@@ -15,44 +16,61 @@ import {GLTF} from 'three/examples/jsm/loaders/GLTFLoader';
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js';
 
 import Main from '../../Main';
-import {ContinentInterface} from '../../@types/Continent';
-import Peaks from './Peaks';
+import Cache from '../../Utils/Cache';
+import {ContinentConditionType, ContinentInterface} from '../../@types/Continent';
+import {Peaks} from './Peaks';
 
 
-export function getCacheKeyForTreeMaterial(continentStatus: ContinentInterface['status']) {
-  return `tree_material_${continentStatus}`;
+export function getCacheKeyForTreeMaterial(
+  continentStatus: ContinentInterface['status'],
+  modifier?: ContinentConditionType
+) {
+  return `tree_material_${continentStatus}`
+    + (modifier && modifier !== 'default' ? `_${modifier}` : '');
 }
 
+export const treesSetCondition = (
+  trees: InstancedMesh,
+  continentStatus: ContinentInterface['status'],
+  condition: ContinentConditionType
+) => {
+  const key = getCacheKeyForTreeMaterial(continentStatus, condition);
+  if (!Cache.isExist(key)) {
+      console.warn('Trees cache doesn\'t exist now');
+      return;
+  }
+  trees.material = Cache.get(key) as MeshStandardMaterial;
+};
 
-export default class Trees {
+
+export class Trees {
   #main: Main;
   #scene: Main['scene'];
   #resources: Main['resources'];
   #config: Main['config'];
-  #cache: Main['cache'];
   #renderer!: Main['renderer'];
   // textures!: Record<string, any>
   treeModel!: GLTF;
-  continentStatus: ContinentInterface['status'];
+  #continentStatus: ContinentInterface['status'];
   #peaks: Peaks;
   treeObj!: Mesh;
-  mesh!: Mesh;
-  material!: MeshStandardMaterial;
+  mesh!: InstancedMesh;
+  #material!: MeshStandardMaterial;
   geometry!: BufferGeometry;
   #landscape: Mesh;
   #surfaceMesh?: MeshSurfaceSampler;
+  resourcesLoaded = false;
 
 
   constructor(peaks: Peaks, continentStatus: ContinentInterface['status'], landscape: Mesh) {
     this.#main = new Main();
     this.#scene = this.#main.scene;
     this.#config = this.#main.config;
-    this.#cache = this.#main.cache;
     this.#resources = this.#main.resources;
     this.#renderer = this.#main.renderer;
     this.#peaks = peaks;
     this.#landscape = landscape;
-    this.continentStatus = continentStatus;
+    this.#continentStatus = continentStatus;
 
     (async () => {
       await this.loadResources();
@@ -67,6 +85,7 @@ export default class Trees {
   async loadResources() {
     this.treeModel = await this.#resources.getSource(this.#config.world.trees.model) as GLTF;
     this.treeObj = this.treeModel.scene.getObjectByName('tree_default') as Mesh;
+    this.resourcesLoaded = true;
   }
 
 
@@ -79,18 +98,30 @@ export default class Trees {
 
 
   setMaterial() {
-    const key = getCacheKeyForTreeMaterial(this.continentStatus);
-    if (this.#cache.hasOwnProperty(key)) {
-      this.material = this.#cache[key] as MeshStandardMaterial;
+    const key = getCacheKeyForTreeMaterial(this.#continentStatus);
+    if (Cache.isExist(key)) {
+      this.#material = Cache.get(key) as MeshStandardMaterial;
       return;
     }
-    this.material = this.#cache[key] = (this.treeObj.material as MeshStandardMaterial).clone();
-    this.material.color.set(this.#config.world.trees.color).convertSRGBToLinear();
-    if (this.continentStatus === 'explored') {
-      this.material.emissive.set(this.#config.world.exploredLandEmissive);
-      this.material.emissiveIntensity = this.#config.world.exploredLandEmissiveIntensity;
+
+    // Set default material
+    this.#material = (this.treeObj.material as MeshStandardMaterial).clone();
+    this.#material.color.set(this.#config.world.trees.color).convertSRGBToLinear();
+    if (this.#continentStatus === 'explored') {
+      this.#material.color.lerp(new Color('#ffffff'), 1);
     }
-    // this.material.emissiveIntensity = 0.2;
+
+    // Set Intersected Material
+    const intersectedMaterial = this.#material.clone();
+    intersectedMaterial.emissive.set(this.#config.world.hoverEmisseve);
+    intersectedMaterial.emissiveIntensity = this.#config.world.hoverEmisseveIntensity;
+
+    // Add materials to cache
+    Cache.add(key, this.#material);
+    Cache.add(
+      getCacheKeyForTreeMaterial(this.#continentStatus, 'intersected'),
+      intersectedMaterial
+    );
   }
 
 
@@ -105,7 +136,7 @@ export default class Trees {
     const sampler = this.#surfaceMesh as MeshSurfaceSampler;
     // const countTrees = randInt(30, 50);
     const countTrees = 40;
-    const sampleMesh = new InstancedMesh(this.geometry, this.material, countTrees);
+    const sampleMesh = new InstancedMesh(this.geometry, this.#material, countTrees);
     sampleMesh.castShadow = true;
     sampleMesh.receiveShadow = true;
     const _position = new Vector3();

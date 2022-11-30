@@ -1,5 +1,5 @@
 import {RepeatWrapping, Texture} from 'three';
-import {SourceInterface, SourceType} from '../@types/Source';
+import {SourceInterface} from '../@types/Source';
 
 
 export function setTextureRepeating(source: SourceInterface, texture: Texture) {

@@ -1,11 +1,13 @@
 import {
   Mesh,
-  MeshStandardMaterial,
 } from 'three';
 import {TileInterface} from './Tile';
 import {SourceInterface} from './Source';
 import {TilesType, PeakLevelsType} from './Map';
+import {Trees} from '../World/Continent/Trees';
+import {Mountains} from '../World/Continent/Mountains';
 
+export type ContinentConditionType = 'default' | 'intersected';
 
 export interface ContinentInterface {
   id: string;
@@ -18,8 +20,8 @@ export interface ContinentInterface {
     mesh?: Mesh,
     peakMeshes?: Mesh[],
   };
-  trees?: Mesh;
-  mountains?: Mesh;
+  trees?: Trees;
+  mountains?: Mountains;
   village?: {
     name: string,
     position: {

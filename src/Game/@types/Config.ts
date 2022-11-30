@@ -44,7 +44,7 @@ export interface ConfigInterface {
     exploredLandColor: ColorRepresentation,
     exploredLandEmissive: ColorRepresentation,
     exploredLandEmissiveIntensity: number,
-    selectionVoxelHeight: number,
+    selectionVoxelDepth: number,
     peakLevelColors: ColorRepresentation[],
     voxel: {
       size: number,

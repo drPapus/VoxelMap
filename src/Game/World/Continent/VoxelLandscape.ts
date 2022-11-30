@@ -1,11 +1,14 @@
 import {
   BufferAttribute,
   BufferGeometry,
+  Color,
   Mesh,
-  MeshStandardMaterial, Texture,
+  MeshStandardMaterial,
+  Texture,
 } from 'three';
 
 import Main from '../../Main';
+import Cache from '../../Utils/Cache';
 import getVoxelFaces from './VoxelFaces';
 import {
   getCoordinates,
@@ -13,20 +16,38 @@ import {
   getVertexPositionForBufferAttributes
 } from './MapHelpers';
 
-import {ContinentInterface} from '../../@types/Continent';
+import {ContinentConditionType, ContinentInterface} from '../../@types/Continent';
 
 
-export function getCacheKeyForLandscapeMaterial(continentStatus: ContinentInterface['status']) {
-  return `landscape_material_${continentStatus}`;
+export function getCacheKeyForLandscapeMaterial(
+  continentStatus: ContinentInterface['status'],
+  modifier?: ContinentConditionType
+) {
+  return `landscape_material_${continentStatus}`
+    + (modifier && modifier !== 'default' ? `_${modifier}` : '');
 }
 
+
+export const voxelLandscapeMeshName = 'land';
+
+export const voxelLandSetCondition = (
+  land: Mesh,
+  continentStatus: ContinentInterface['status'],
+  condition: ContinentConditionType
+) => {
+  const key = getCacheKeyForLandscapeMaterial(continentStatus, condition);
+  if (!Cache.isExist(key)) {
+    console.warn('Land cache doesn\'t exist now');
+    return;
+  }
+  land.material = Cache.get(key) as MeshStandardMaterial;
+};
 
 export class VoxelLandscape {
   #main: Main;
   #config: Main['config'];
   #resources: Main['resources'];
   #map: Main['map'];
-  #cache: Main['cache'];
   #scene: Main['scene'];
   #continent: ContinentInterface;
   textures: Record<string, Texture> = {};
@@ -39,6 +60,7 @@ export class VoxelLandscape {
   geometry!: BufferGeometry;
   #material!: MeshStandardMaterial;
   mesh!: Mesh;
+  resourcesLoaded = false;
 
 
   constructor(continent: ContinentInterface) {
@@ -46,7 +68,6 @@ export class VoxelLandscape {
     this.#config = this.#main.config;
     this.#resources = this.#main.resources;
     this.#scene = this.#main.scene;
-    this.#cache = this.#main.cache;
     this.#map = this.#main.map;
     this.#continent = continent;
     this.#voxel = this.#config.world.voxel;
@@ -128,31 +149,35 @@ export class VoxelLandscape {
   private async loadResources() {
     this.textures.normalMap =
       await this.#resources.getSource(this.#map.sea.material.textureNormal) as Texture;
+    this.resourcesLoaded = true;
   }
 
 
   setMaterial() {
     const key = getCacheKeyForLandscapeMaterial(this.#continent.status);
-    if (this.#cache.hasOwnProperty(key)) {
-      this.#material = this.#cache[key] as MeshStandardMaterial;
+    if (Cache.isExist(key)) {
+      this.#material = Cache.get(key) as MeshStandardMaterial;
       return;
     }
-    this.#material = this.#cache[key] = new MeshStandardMaterial();
+
+    this.#material = new MeshStandardMaterial();
+    Cache.add(key, this.#material);
     this.#material.roughness = 1;
 
     switch (this.#continent.status) {
       case 'active':
         this.#material.color.set(this.#config.world.voxel.sideColor);
         break;
+      case 'explored':
+        this.#material
+          .color
+          .set(this.#config.world.voxel.sideColor)
+          .lerp(new Color('#ffffff'), .75);
+        break;
       case 'disabled':
         this.#material.color.set(this.#config.world.disabledLandColor);
         this.#material.transparent = true;
         this.#material.opacity = .3;
-        break;
-      case 'explored':
-        this.#material.color.set(this.#config.world.voxel.sideColor);
-        this.#material.emissive.set(this.#config.world.exploredLandEmissive);
-        this.#material.emissiveIntensity = this.#config.world.exploredLandEmissiveIntensity;
         break;
     }
     this.#material.color.convertSRGBToLinear();
@@ -161,13 +186,24 @@ export class VoxelLandscape {
       await this.loadResources();
       this.#material.normalMap = this.textures.normalMap;
       this.#material.needsUpdate = true;
+
+      // Set Intersected Material
+      if (this.#continent.status !== 'disabled') {
+        const selectedMaterial = this.#material.clone();
+        selectedMaterial.emissive.set(this.#config.world.hoverEmisseve);
+        selectedMaterial.emissiveIntensity = this.#config.world.hoverEmisseveIntensity;
+        Cache.add(
+          getCacheKeyForLandscapeMaterial(this.#continent.status, 'intersected'),
+          selectedMaterial
+        );
+      }
     })();
   }
 
 
   setMesh() {
     this.mesh = new Mesh(this.geometry, this.#material);
-    this.mesh.name = 'land';
+    this.mesh.name = voxelLandscapeMeshName;
     this.mesh.layers.enable(1);
     this.mesh.receiveShadow = true;
     this.mesh.castShadow = true;

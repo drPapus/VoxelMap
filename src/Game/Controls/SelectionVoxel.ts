@@ -1,6 +1,5 @@
 import {
   BufferGeometry,
-  CylinderGeometry,
   DoubleSide,
   Mesh,
   ShaderMaterial,
@@ -29,7 +28,6 @@ export default class SelectionVoxel {
   #debugFolder?: GUI;
   mesh!: Mesh;
   selected: boolean;
-  #textures!: Record<string, any>;
   #geometry!: BufferGeometry;
   #materials: {
     side?: ShaderMaterial,
@@ -90,7 +88,7 @@ export default class SelectionVoxel {
     this.#geometry = new CylinderBufferGeometry(
       this.#voxel.size,
       this.#voxel.size,
-      this.#voxel.height,
+      this.#config.world.selectionVoxelDepth,
       6,
       6,
       false
@@ -101,36 +99,38 @@ export default class SelectionVoxel {
   setMesh() {
     this.mesh = new Mesh(this.#geometry, Object.values(this.#materials));
     this.mesh.rotation.set(Math.PI, Math.PI * .5, 0);
-    this.mesh.visible = false;
+    this.setHidden();
     this.#scene.add(this.mesh);
   }
 
 
   setVisible() {
+    if (this.mesh.visible) {return;}
     this.mesh.visible = true;
   }
 
 
   setHidden() {
+    if (!this.mesh.visible) {return;}
     this.mesh.visible = false;
   }
 
 
   setPosition(x: number, y: number, z: number) {
-    this.mesh.position.x = x + this.#voxel.size / 2;
-    this.mesh.position.y = y + (this.#voxel.height / 2);
-    this.mesh.position.z = z + (this.#voxel.width / 2);
+    this.mesh.position.x = x;
+    this.mesh.position.y = y + (this.#config.world.selectionVoxelDepth / 2);
+    this.mesh.position.z = z;
   }
 
 
   update() {
     if (!this.mesh.visible) {return;}
-    // tslint:disable-next-line:no-non-null-assertion
-    this.#materials.side!.uniforms.uTime.value = this.#time.elapsed;
+    (this.#materials.side as ShaderMaterial).uniforms.uTime.value = this.#time.elapsed;
   }
 
 
   setDebug() {
+    // tslint:disable:no-non-null-assertion
     this.#debugFolder = (this.#debug.ui as GUI).addFolder('SelectionVoxel');
     const side = this.#debugFolder.addFolder('Sides');
     const bottom = this.#debugFolder.addFolder('Bottom');
@@ -144,12 +144,10 @@ export default class SelectionVoxel {
       .addColor(tmp, 'sideColor')
       .name('Color')
       .onChange(() => {
-        // tslint:disable-next-line:no-non-null-assertion
         this.#materials.side!.uniforms.uColor.value.set(tmp.sideColor);
       });
 
     side
-      // tslint:disable-next-line:no-non-null-assertion
       .add(this.#materials.side!.uniforms.uPointSize, 'value')
       .name('Point Size')
       .min(0)
@@ -157,7 +155,6 @@ export default class SelectionVoxel {
       .step(.001);
 
     side
-      // tslint:disable-next-line:no-non-null-assertion
       .add(this.#materials.side!.uniforms.uResolution.value, 'x')
       .name('Res x')
       .min(0)
@@ -165,7 +162,6 @@ export default class SelectionVoxel {
       .step(.001);
 
     side
-      // tslint:disable-next-line:no-non-null-assertion
       .add(this.#materials.side!.uniforms.uResolution.value, 'y')
       .name('Res Y')
       .min(0)
@@ -173,7 +169,6 @@ export default class SelectionVoxel {
       .step(.001);
 
     side
-      // tslint:disable-next-line:no-non-null-assertion
       .add(this.#materials.side!.uniforms.uTransparency, 'value')
       .name('Transparency')
       .min(0)
@@ -181,7 +176,6 @@ export default class SelectionVoxel {
       .step(.001);
 
     side
-      // tslint:disable-next-line:no-non-null-assertion
       .add(this.#materials.side!.uniforms.uSpeed, 'value')
       .name('Speed')
       .min(0)
@@ -189,7 +183,6 @@ export default class SelectionVoxel {
       .step(.001);
 
     side
-      // tslint:disable-next-line:no-non-null-assertion
       .add(this.#materials.side!.uniforms.uWeight, 'value')
       .name('Weight')
       .min(0)
@@ -198,7 +191,6 @@ export default class SelectionVoxel {
 
     // Bottom
     bottom
-      // tslint:disable-next-line:no-non-null-assertion
       .add(this.#materials.bottom!.uniforms.uSize, 'value')
       .name('Size')
       .min(0)
@@ -206,7 +198,6 @@ export default class SelectionVoxel {
       .step(.001);
 
     bottom
-      // tslint:disable-next-line:no-non-null-assertion
       .add(this.#materials.bottom!.uniforms.uOpacity, 'value')
       .name('Opacity')
       .min(0)
@@ -217,7 +208,6 @@ export default class SelectionVoxel {
       .addColor(tmp, 'bottomColor')
       .name('Color')
       .onChange(() => {
-        // tslint:disable-next-line:no-non-null-assertion
         this.#materials.bottom!.uniforms.uColor.value.set(tmp.bottomColor);
       });
   }

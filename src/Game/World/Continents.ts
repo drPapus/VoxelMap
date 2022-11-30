@@ -1,20 +1,24 @@
 import {
-  ColorRepresentation,
   Mesh,
   MeshStandardMaterial,
 } from 'three';
 import {GUI} from 'dat.gui';
 
 import Main from '../Main';
-import Peaks from './Continent/Peaks';
 import Tiles from './Continent/Tiles';
-import {VoxelLandscape} from './Continent/VoxelLandscape';
-import {ContinentInterface} from '../@types/Continent';
-import Trees from './Continent/Trees';
+import {
+  Peaks,
+  peaksSetCondition
+} from './Continent/Peaks';
+import {
+  voxelLandSetCondition,
+  VoxelLandscape,
+} from './Continent/VoxelLandscape';
+import {ContinentConditionType, ContinentInterface} from '../@types/Continent';
+import {Trees, treesSetCondition} from './Continent/Trees';
 // import Villages from './Continent/Villages';
 // import Goddess from './Continent/Goddess';
-import Mountains from './Continent/Mountains';
-import ZoneName from './Continent/ZoneName';
+import {Mountains, mountainsSetCondition} from './Continent/Mountains';
 
 
 export default class Continents {
@@ -24,11 +28,7 @@ export default class Continents {
   #debugFolder?: GUI;
   #config: Main['config'];
   continents: Record<ContinentInterface['id'], ContinentInterface> = {};
-  continentByMeshId!: Record<Mesh['id'], ContinentInterface>;
-  defaultEmissive?: ColorRepresentation;
-  defaultEmissiveIntensity?: number;
-  hoveredEmissive: ColorRepresentation;
-  hoveredEmissiveIntensity: number;
+  continentByMeshId: Record<Mesh['id'], ContinentInterface> = {};
 
 
   constructor() {
@@ -36,17 +36,10 @@ export default class Continents {
     this.#map = this.#main.map;
     this.#debug = this.#main.debug;
     this.#config = this.#main.config;
-    this.defaultEmissive = undefined;
-    this.defaultEmissiveIntensity = undefined;
-    this.hoveredEmissive = this.#config.world.hoverEmisseve;
-    this.hoveredEmissiveIntensity = this.#config.world.hoverEmisseveIntensity;
-    this.continentByMeshId = {};
 
     this.setContinents();
 
-    if (this.#debug.active) {
-      this.setDebug();
-    }
+    if (this.#debug.active) {this.setDebug();}
   }
 
 
@@ -57,75 +50,33 @@ export default class Continents {
       let tiles;
       let trees;
       let mountains;
-      let zoneName
 
       if (continent.status !== 'disabled') {
         tiles = new Tiles(continent, voxelLandscape.mesh);
         trees = new Trees(peaks, continent.status, voxelLandscape.mesh);
         mountains = new Mountains(peaks, continent.status, voxelLandscape.mesh);
-        
         // villages = continent.village ? new Villages(continent, Object.values(cells.cells)) : villages
         // goddesses = continent.goddess ? new Goddess(continent, Object.values(cells.cells)) : goddesses
-      } else {
-        zoneName = new ZoneName(continent)
       }
 
       this.continents[continent.id] = continent;
       this.continents[continent.id].landscape.mesh = voxelLandscape.mesh;
       this.continents[continent.id].landscape.peakMeshes = peaks.meshes;
       this.continents[continent.id].tiles = tiles?.tiles;
-      this.continents[continent.id].trees = trees?.mesh;
-      // this.continents[continent.id].mountains = mountains?.mesh;
+      this.continents[continent.id].trees = trees;
+      this.continents[continent.id].mountains = mountains;
       this.continentByMeshId[voxelLandscape.mesh.id] = this.continents[continent.id];
     }
-    console.log(this.#main.renderer.instance.info);
   }
 
 
-  setIntersected(continentId: Mesh['id']) {
+  setCondition(continentId: Mesh['id'], condition: ContinentConditionType) {
     const continent = this.continentByMeshId[continentId];
-    // tslint:disable-next-line:no-non-null-assertion
-    const material = continent.landscape.mesh!.material as MeshStandardMaterial;
-    this.defaultEmissive = material.emissive.getHex();
-    this.defaultEmissiveIntensity = material.emissiveIntensity;
-    material.emissive.set(this.hoveredEmissive);
-    // tslint:disable-next-line:no-non-null-assertion
-    for (const peak of continent.landscape.peakMeshes!) {
-      const material = peak.material as MeshStandardMaterial;
-      for (const child of peak.children) {
-        const _child = child as Mesh;
-        const _mat = _child.material as MeshStandardMaterial;
-        _mat.emissive.set(this.hoveredEmissive);
-        _mat.emissiveIntensity = this.hoveredEmissiveIntensity;
-      }
-      material.emissive.set(this.hoveredEmissive);
-      material.emissiveIntensity = this.hoveredEmissiveIntensity;
-    }
-  }
 
-
-  unsetIntersected(continentId: Mesh['id']) {
-    const continent = this.continentByMeshId[continentId];
-    // tslint:disable-next-line:no-non-null-assertion
-    const material = continent.landscape.mesh!.material as MeshStandardMaterial;
-    // tslint:disable-next-line:no-non-null-assertion
-    material.emissive.set(this.defaultEmissive!);
-    // tslint:disable-next-line:no-non-null-assertion
-    for (const peak of continent.landscape.peakMeshes!) {
-      const material = peak.material as MeshStandardMaterial;
-      for (const child of peak.children) {
-        const _child = child as Mesh;
-        const _mat = _child.material as MeshStandardMaterial;
-        // tslint:disable-next-line:no-non-null-assertion
-        _mat.emissive.set(this.defaultEmissive!);
-        // tslint:disable-next-line:no-non-null-assertion
-        _mat.emissiveIntensity = this.defaultEmissiveIntensity!;
-      }
-      // tslint:disable-next-line:no-non-null-assertion
-      material.emissive.set(this.defaultEmissive!);
-      // tslint:disable-next-line:no-non-null-assertion
-      material.emissiveIntensity = this.defaultEmissiveIntensity!;
-    }
+    voxelLandSetCondition(continent.landscape.mesh as Mesh, continent.status, condition);
+    peaksSetCondition(continent.landscape.peakMeshes as Mesh[], continent.status, condition);
+    treesSetCondition((continent.trees as Trees).mesh, continent.status, condition);
+    mountainsSetCondition((continent.mountains as Mountains).mesh, continent.status, condition);
   }
 
 
@@ -144,20 +95,20 @@ export default class Continents {
     };
 
     // Hovered
-    const hovered = this.#debugFolder.addFolder('Hovered');
-    hovered.addColor(emissive, 'hover')
-      .name('Color')
-      .onChange(() => {
-        this.hoveredEmissive = emissive.hover;
-      });
-    hovered.add(emissive, 'hoverIntensity')
-      .name('Intensity')
-      .min(0)
-      .max(1)
-      .step(.01)
-      .onChange(() => {
-        this.hoveredEmissiveIntensity = emissive.hoverIntensity;
-      });
+    // const hovered = this.#debugFolder.addFolder('Hovered');
+    // hovered.addColor(emissive, 'hover')
+    //   .name('Color')
+    //   .onChange(() => {
+    //     this.hoveredEmissive = emissive.hover;
+    //   });
+    // hovered.add(emissive, 'hoverIntensity')
+    //   .name('Intensity')
+    //   .min(0)
+    //   .max(1)
+    //   .step(.01)
+    //   .onChange(() => {
+    //     this.hoveredEmissiveIntensity = emissive.hoverIntensity;
+    //   });
 
     // Explored Land
     const explored = this.#debugFolder.addFolder('Explored Land');
@@ -225,27 +176,27 @@ export default class Continents {
     // }
 
     // Trees
-    const trees = this.#debugFolder.addFolder('Trees');
-    trees.addColor(colors, 'trees')
-      .name('Color')
-      .onChange(() => {
-        for (const continent of Object.values(this.continents)) {
-          if (['explored', 'disabled'].includes(continent.status) || !continent.trees) {continue;}
-          const _mat = continent.trees.material as MeshStandardMaterial;
-          _mat.color.set(colors.trees);
-        }
-      });
+    // const trees = this.#debugFolder.addFolder('Trees');
+    // trees.addColor(colors, 'trees')
+    //   .name('Color')
+    //   .onChange(() => {
+    //     for (const continent of Object.values(this.continents)) {
+    //       if (['explored', 'disabled'].includes(continent.status) || !continent.trees) {continue;}
+    //       const _mat = continent.trees.material as MeshStandardMaterial;
+    //       _mat.color.set(colors.trees);
+    //     }
+    //   });
 
     // Mountains
-    const mountains = this.#debugFolder.addFolder('Mountains');
-    mountains.addColor(colors, 'mountains')
-      .name('Color')
-      .onChange(() => {
-        for (const continent of Object.values(this.continents)) {
-          if (['explored', 'disabled'].includes(continent.status) || !continent.mountains) {continue;}
-          const _mat = continent.mountains.material as MeshStandardMaterial;
-          _mat.color.set(colors.mountains);
-        }
-      });
+    // const mountains = this.#debugFolder.addFolder('Mountains');
+    // mountains.addColor(colors, 'mountains')
+    //   .name('Color')
+    //   .onChange(() => {
+    //     for (const continent of Object.values(this.continents)) {
+    //       if (['explored', 'disabled'].includes(continent.status) || !continent.mountains) {continue;}
+    //       const _mat = continent.mountains.material as MeshStandardMaterial;
+    //       _mat.color.set(colors.mountains);
+    //     }
+    //   });
   }
 }

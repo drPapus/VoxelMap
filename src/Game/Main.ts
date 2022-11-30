@@ -1,8 +1,7 @@
 import {
   Scene,
-  Color, MeshStandardMaterial, BufferGeometry, MeshBasicMaterial
+  Color,
 } from 'three';
-import {GLTF} from 'three/examples/jsm/loaders/GLTFLoader';
 
 import Debug from './Utils/Debug';
 import Sizes from './Utils/Sizes';
@@ -34,10 +33,6 @@ export default class Main {
   sizes!: Sizes;
   time!: Time;
   scene!: Scene;
-  cache: Record<
-    string,
-    MeshStandardMaterial | GLTF | BufferGeometry | MeshBasicMaterial
-  > = {};
   resources!: Resources;
   camera!: Camera;
   renderer!: Renderer;
@@ -51,7 +46,7 @@ export default class Main {
   constructor(_canvas?: Element) {
     if (GameInstance) {return GameInstance;}
 
-    console.log(this);
+    console.log('Main', this);
 
     GameInstance = this;
     this.canvas = _canvas as Element;
@@ -67,6 +62,7 @@ export default class Main {
     this.world = new World();
     this.controls = new Controls();
     this.raycaster = new Raycaster();
+
     if (this.debug.active) {this.debug.run();}
 
     this.setEvents();

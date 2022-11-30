@@ -1,5 +1,5 @@
 import {ContinentInterface} from './Continent';
-import {SourceKey} from "./Source";
+import {SourceKey} from './Source';
 
 
 export type TilesType = Uint32Array;

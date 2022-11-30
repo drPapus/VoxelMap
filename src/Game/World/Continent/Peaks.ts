@@ -1,35 +1,60 @@
 import {
   BufferAttribute,
   BufferGeometry,
+  Color,
   Line3,
   Mesh,
-  MeshStandardMaterial, Texture,
+  MeshStandardMaterial,
+  Texture,
   Vector3,
 } from 'three';
 
 import Main from '../../Main';
+import Cache from '../../Utils/Cache';
 import VoxelFaces from './VoxelFaces';
 
-import {ContinentInterface} from '../../@types/Continent';
+import {ContinentConditionType, ContinentInterface} from '../../@types/Continent';
 import {getCoordinates, getVertexPositionForBufferAttributes} from './MapHelpers';
 import {FaceInterface} from '../../@types/Face';
 
 type level = string;
 
 
-export function getCacheKeyForPeakMaterial(level: level, continentStatus: ContinentInterface['status']) {
-  return `peak_material_${continentStatus}_${level}`;
+export function getCacheKeyForPeakMaterial(
+  level: level,
+  continentStatus: ContinentInterface['status'],
+  modifier?: ContinentConditionType
+) {
+  // For only one material for peaks in disabled continents
+  level = continentStatus === 'disabled' ? '0' : level;
+  return `peak_material_${continentStatus}_${level}`
+    + (modifier && modifier !== 'default' ? `_${modifier}` : '');
 }
 
 
-export default class Peaks {
+export const peaksSetCondition = (
+  peaks: Mesh[],
+  continentStatus: ContinentInterface['status'],
+  condition: ContinentConditionType
+) => {
+  for (const [level, peak] of peaks.entries()) {
+    const key = getCacheKeyForPeakMaterial(level.toString(), continentStatus, condition);
+    if (!Cache.isExist(key)) {
+      console.warn('Peak cache doesn\'t exist now');
+      return;
+    }
+    peak.material = Cache.get(key) as MeshStandardMaterial;
+  }
+};
+
+
+export class Peaks {
   #main: Main;
   #config: Main['config'];
   #map: Main['map'];
   #resources: Main['resources'];
   #continent: ContinentInterface;
   #voxel: Main['config']['world']['voxel'];
-  #cache: Main['cache'];
   #textures: Record<string, Texture> = {};
   #landscape: Mesh;
   #material: Record<level, MeshStandardMaterial> = {};
@@ -40,6 +65,7 @@ export default class Peaks {
   }> = {};
   geometries: Record<level, BufferGeometry> = {};
   meshes!: Mesh[];
+  resourcesLoaded = false;
 
 
   constructor(continent: ContinentInterface, landscape: Mesh) {
@@ -47,7 +73,6 @@ export default class Peaks {
     this.#config = this.#main.config;
     this.#map = this.#main.map;
     this.#landscape = landscape;
-    this.#cache = this.#main.cache;
     this.#resources = this.#main.resources;
     this.#continent = continent;
     this.#voxel = this.#config.world.voxel;
@@ -65,6 +90,7 @@ export default class Peaks {
       await this.#resources.getSource(this.#map.sea.material.texture) as Texture;
     // this.#textures.woodHightMapTexture =
     //   await this.#resources.getSource(this.#map.sea.material.texture) as Texture;
+    this.resourcesLoaded = true;
   }
 
 
@@ -79,7 +105,7 @@ export default class Peaks {
           indices: []
         };
       }
-      for (const {side, dir, corners} of (this.#voxel.faces as FaceInterface[])) {
+      for (const {dir, corners} of (this.#voxel.faces as FaceInterface[])) {
         const ndx = this.attributes[y].positions.length / 3;
 
         for (const pos of corners) {
@@ -161,21 +187,24 @@ export default class Peaks {
   setMaterial() {
     for (const level of Object.keys(this.geometries)) {
       const key = getCacheKeyForPeakMaterial(level, this.#continent.status);
-
-      if (this.#cache.hasOwnProperty(key)) {
-        this.#material[level] = this.#cache[key] as MeshStandardMaterial;
+      if (Cache.isExist(key)) {
+        this.#material[level] = Cache.get(key) as MeshStandardMaterial;
         continue;
       }
 
       const material = new MeshStandardMaterial();
+      Cache.add(key, material);
       switch (this.#continent.status) {
         case 'active':
           material.color.set(this.#config.world.peakLevelColors[+level]);
           break;
         case 'explored':
-          material.color.set(this.#config.world.peakLevelColors[+level]);
-          material.emissive.set(this.#config.world.exploredLandEmissive);
-          material.emissiveIntensity = this.#config.world.exploredLandEmissiveIntensity;
+          material
+            .color
+            .set(this.#config.world.peakLevelColors[+level])
+            .lerp(new Color('#ffffff'), .75);
+          // material.emissive.set(this.#config.world.exploredLandEmissive);
+          // material.emissiveIntensity = this.#config.world.exploredLandEmissiveIntensity;
           break;
         case 'disabled':
           material.color.set(this.#config.world.disabledLandColor);
@@ -189,10 +218,20 @@ export default class Peaks {
         await this.loadResources();
         material.map = this.#textures.map;
         material.needsUpdate = true;
-        // material.displacementMap = this.#textures.woodHightMapTexture;
+
+        // Set intersected Material
+        if (this.#continent.status !== 'disabled') {
+          const intersectedMaterial = material.clone();
+          intersectedMaterial.emissive.set(this.#config.world.hoverEmisseve);
+          intersectedMaterial.emissiveIntensity = this.#config.world.hoverEmisseveIntensity;
+          Cache.add(
+            getCacheKeyForPeakMaterial(level, this.#continent.status, 'intersected'),
+            intersectedMaterial
+          );
+        }
       })();
 
-      this.#material[level] = this.#cache[key] = material;
+      this.#material[level] = material;
     }
   }
 

@@ -15,6 +15,7 @@ import Controls from './Controls';
 import DefaultConfig from './Configs/DefaultConfig';
 import FirstMapSources from './Maps/FirstMap/Sources';
 import FirstMap from './Maps/FirstMap/FirstMap';
+import AnimationMixer from './Utils/Animation';
 
 import {SourcesType} from './@types/Source';
 import {ConfigInterface} from './@types/Config';
@@ -39,6 +40,7 @@ export default class Main {
   world?: World;
   config!: ConfigInterface;
   map!: MapInterface;
+  animation!: AnimationMixer;
   raycaster?: Raycaster;
   controls?: Controls;
 
@@ -58,6 +60,7 @@ export default class Main {
     this.time = new Time();
     this.resources = new Resources(Sources);
     this.camera = new Camera();
+    this.animation = new AnimationMixer();
     this.renderer = new Renderer();
     this.world = new World();
     this.controls = new Controls();
@@ -96,6 +99,7 @@ export default class Main {
     this.raycaster?.update();
     this.controls?.update();
     this.camera.update();
+    this.animation.update();
     this.renderer.update();
   }
 

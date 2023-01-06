@@ -1,7 +1,7 @@
 import {Vector2} from 'three';
 import {ContinentInterface} from '../../@types/Continent';
 import geography from '../../../mocks/zones.json';
-import {TilesType, TilePositionType, PeakLevelsType} from '../../@types/Map';
+import {TilesType, TileCoordinatesType, PeakLevelsType, TilePositionType} from '../../@types/Map';
 import {ConfigInterface} from '../../@types/Config';
 import {randInt} from 'three/src/math/MathUtils';
 
@@ -44,7 +44,7 @@ export function getGeography(): ContinentInterface[] {
     return {
       id: String(id),
       name,
-      status: statuses[randInt(0, 2)] as ContinentInterface['status'],
+      status: statuses[randInt(0, 1)] as ContinentInterface['status'],
       landscape: {
         tiles,
         peakLevels: getTilesLevel(continentBox, tiles),
@@ -54,7 +54,7 @@ export function getGeography(): ContinentInterface[] {
 }
 
 
-export function getCoordinates(position: number): TilePositionType {
+export function getCoordinates(position: TilePositionType): TileCoordinatesType {
   return {
     // tslint:disable-next-line:no-bitwise
     x: (position & 0xffff) - DEFAULT_START_POSITION,
@@ -64,7 +64,7 @@ export function getCoordinates(position: number): TilePositionType {
 }
 
 
-export function get32BitPosition(position: TilePositionType): number {
+export function get32BitPosition(position: TileCoordinatesType): number {
   return (position.z + DEFAULT_START_POSITION)
     * Math.pow(2, 16)
     + (position.x + DEFAULT_START_POSITION);
@@ -74,7 +74,7 @@ export function get32BitPosition(position: TilePositionType): number {
 export function isNeighborTile(
   tiles: TilesType,
   peakLevels: PeakLevelsType,
-  position: TilePositionType
+  position: TileCoordinatesType
 ): boolean {
   if (typeof position.y !== 'number') {throw new Error('Y doesn\'t exists');}
   const position32Bit = get32BitPosition(position);
@@ -86,14 +86,14 @@ export function isNeighborTile(
 export function getVertexPositionForBufferAttributes(
   voxel: ConfigInterface['world']['voxel'],
   vertexStartPosition: {x: number, y: number, z: number},
-  tilePosition: {x: number, y: number, z: number}
+  tileCoordinates: {x: number, y: number, z: number}
 ): [number, number, number] {
   return [
-    vertexStartPosition.x + tilePosition.x * voxel.height - (tilePosition.x * voxel.size / 2),
-    vertexStartPosition.y + tilePosition.y * voxel.depth,
-    vertexStartPosition.z - tilePosition.z * voxel.width
-      + (tilePosition.x % 2 * (voxel.width / 2))
-      * (tilePosition.x > 0 ? -1 : 1), // fix voxel displacement when positive X
+    vertexStartPosition.x + tileCoordinates.x * voxel.height - (tileCoordinates.x * voxel.size / 2),
+    vertexStartPosition.y + tileCoordinates.y * voxel.depth,
+    vertexStartPosition.z - tileCoordinates.z * voxel.width
+      + (tileCoordinates.x % 2 * (voxel.width / 2))
+      * (tileCoordinates.x > 0 ? -1 : 1), // fix voxel displacement when positive X
   ];
 }
 

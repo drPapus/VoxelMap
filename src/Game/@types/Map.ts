@@ -8,7 +8,10 @@ export type TilesType = Uint32Array;
 export type PeakLevelsType = Uint8Array;
 
 
-export type TilePositionType = {
+export type TilePositionType = number;
+
+
+export type TileCoordinatesType = {
   x: number,
   y?: number,
   z: number,

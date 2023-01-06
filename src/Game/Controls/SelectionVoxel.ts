@@ -125,7 +125,7 @@ export default class SelectionVoxel {
 
   update() {
     if (!this.mesh.visible) {return;}
-    (this.#materials.side as ShaderMaterial).uniforms.uTime.value = this.#time.elapsed;
+    (this.#materials.side as ShaderMaterial).uniforms.uTime.value = this.#time.clock.elapsedTime;
   }
 
 

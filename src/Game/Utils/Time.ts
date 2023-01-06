@@ -5,14 +5,14 @@ import {
 
 export default class Time extends EventDispatcher {
   clock: Clock;
-  elapsed: number;
+  // elapsed: number;
 
   constructor() {
     super();
 
     // Setup
     this.clock = new Clock();
-    this.elapsed = 0;
+    // this.elapsed = this.clock.elapsedTime;
 
     window.requestAnimationFrame(() => {
       this.tick();
@@ -20,7 +20,9 @@ export default class Time extends EventDispatcher {
   }
 
   tick() {
-    this.elapsed = this.clock.getElapsedTime();
+    // this.elapsed = this.clock.elapsedTime;
+
+    // console.log(this.elapsed);
 
     this.dispatchEvent({type: 'tick'});
 

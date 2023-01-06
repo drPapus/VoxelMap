@@ -62,14 +62,14 @@ export default class Sea {
     this.material = new MeshStandardMaterial();
     this.material.displacementScale = this.#map.sea.material.displacementScale;
     this.material.roughness = this.#map.sea.material.roughness;
-    this.material.color = new Color(this.#map.sea.color).convertSRGBToLinear();
+    this.material.color.set(this.#map.sea.color).convertSRGBToLinear();
 
     (async () => {
       await this.setTextures();
       this.material.map = this.textures.map;
-      this.material.normalMap = this.textures.normalMap;
-      this.material.roughnessMap = this.textures.roughnessMap;
-      this.material.displacementMap = this.textures.displacementMap;
+      // this.material.normalMap = this.textures.normalMap;
+      // this.material.roughnessMap = this.textures.roughnessMap;
+      // this.material.displacementMap = this.textures.displacementMap;
     })();
   }
 

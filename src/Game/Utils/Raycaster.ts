@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Mesh,
   Raycaster as ThreeRaycaster,
@@ -138,17 +139,17 @@ export default class Raycaster {
         this.#selectionVoxel.selected = true;
 
         // TODO DELETE ===============================
-        
-        // console.log('selected', {
-        //   position:
-        //     // tslint:disable-next-line:no-non-null-assertion
-        //     this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
-        //   ,
-        //   coordinates: getCoordinates(
-        //     // tslint:disable-next-line:no-non-null-assertion
-        //     this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
-        //   )
-        // });
+        // Для наглядности
+        console.log('selected', {
+          position:
+            // tslint:disable-next-line:no-non-null-assertion
+            this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
+          ,
+          coordinates: getCoordinates(
+            // tslint:disable-next-line:no-non-null-assertion
+            this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
+          )
+        });
         // TODO END DELETE ==============================
       }
     } else {
@@ -170,15 +171,15 @@ export default class Raycaster {
         .center;
 
     // TODO DELETE ===============================
-    
-    // console.log('hover', {
-    //   position:
-    //     this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
-    //   ,
-    //   coordinates: getCoordinates(
-    //     this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
-    //   )
-    // });
+    // Для наглядности
+    console.log('hover', {
+      position:
+        this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
+      ,
+      coordinates: getCoordinates(
+        this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
+      )
+    });
     // TODO END DELETE ==============================
 
     this.#selectionVoxel.setPosition(...position);

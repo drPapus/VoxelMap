@@ -81,11 +81,11 @@ export class Trees {
     })();
   }
 
+
   async loadResources() {
     this.treeModel = await this.#resources.getSource(this.#config.world.trees.model) as GLTF;
     this.treeObj = this.treeModel.scene.getObjectByName('tree_default') as Mesh;
     this.resourcesLoaded = true;
-    //console.log(this.treeObj)
   }
 
 

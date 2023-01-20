@@ -209,6 +209,6 @@ export class VoxelLandscape {
     this.mesh.receiveShadow = true;
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;
-    this.#scene.add(this.mesh);
+    // this.#scene.add(this.mesh);
   }
 }

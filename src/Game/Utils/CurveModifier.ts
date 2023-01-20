@@ -15,9 +15,9 @@ export interface SplineUniformInterface extends SplineUniform {
 }
 
 
-const CHANNELS = 4;
-const TEXTURE_WIDTH = 1024;
-const TEXTURE_HEIGHT = 4;
+export const CHANNELS = 4;
+export const TEXTURE_WIDTH = 1024;
+export const TEXTURE_HEIGHT = 4;
 
 
 const computeFrames = (curve: Curve<Vector3>, segments: number) => {
@@ -74,6 +74,8 @@ function updateSplineTexture(texture: DataTexture, splineCurve: Curve<Vector3>, 
   const points = splineCurve.getSpacedPoints(numberOfPoints);
   const frames = computeFrames(splineCurve, numberOfPoints);
 
+  console.log('nop', numberOfPoints, points, frames);
+
   for (let i = 0; i < numberOfPoints; i++) {
     const rowOffset = Math.floor(i / TEXTURE_WIDTH);
     const rowIndex = i % TEXTURE_WIDTH;
@@ -89,6 +91,7 @@ function updateSplineTexture(texture: DataTexture, splineCurve: Curve<Vector3>, 
   }
   texture.needsUpdate = true;
 }
+
 
 Flow.prototype.updateCurve = function(index: number, curve: Curve<Vector3>) {
   if (index >= this.curveArray.length) {

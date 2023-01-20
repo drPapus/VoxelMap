@@ -15,17 +15,19 @@ import {
   ExtrudeBufferGeometry,
   MeshPhysicalMaterial,
   MeshLambertMaterial,
-  LoopOnce, ShaderMaterial, Texture, DoubleSide, Color, Vector2, DataTexture
+  LoopOnce, ShaderMaterial, Texture, DoubleSide, Color, Vector2, DataTexture, Vector4, Matrix3, Matrix4
 } from 'three';
 import {mergeBufferGeometries, mergeVertices} from 'three/examples/jsm/utils/BufferGeometryUtils';
 import Main from '../../Main';
-import {Flow, SplineUniformInterface} from '../../Utils/CurveModifier';
+import {CHANNELS, Flow, SplineUniformInterface, TEXTURE_HEIGHT, TEXTURE_WIDTH} from '../../Utils/CurveModifier';
 import {getCoordinates, getVertexPositionForBufferAttributes} from './MapHelpers';
 import FragmentShader from '../../Shaders/SettlementMovements/Fragment.glsl';
 import VertexShader from '../../Shaders/SettlementMovements/Vertex.glsl';
 
 import {TilePositionType} from '../../@types/Map';
 import {ContinentInterface} from '../../@types/Continent';
+import {randFloat, randInt} from "three/src/math/MathUtils";
+import {TubePainter} from "three/examples/jsm/misc/TubePainter";
 // import VertexShader from "../../Shaders/SelectionVoxel/Vertex.glsl";
 // import FragmentShader from "../../Shaders/SelectionVoxel/Fragment.glsl";
 
@@ -42,6 +44,7 @@ type movementSizesType = {
   fletchingInside: number,
 
   depth: number,
+  gradientWidth: number,
   depthSegments: number,
   curveLength: number,
   offsetFromTile: number
@@ -101,6 +104,7 @@ fletching    shaft   point
     fletchingInside: .4,
 
     depth: .1,
+    gradientWidth: 1,
     depthSegments: 10,
     curveLength: 0,
     offsetFromTile: 2,
@@ -132,14 +136,14 @@ fletching    shaft   point
 
 
   private setMaterial() {
-    this.#material = new ShaderMaterial();
-    this.#material.vertexShader = VertexShader;
-    this.#material.fragmentShader = FragmentShader;
-    this.#material.uniforms = {};
-    this.#material.uniforms.colorOne = {value: new Color('#58ab27')};
-    this.#material.uniforms.colorTwo = {value: new Color('#ff0000')};
-    this.#material.transparent = true;
-    this.#material.needsUpdate = true;
+    // this.#material = new ShaderMaterial();
+    // this.#material.vertexShader = VertexShader;
+    // this.#material.fragmentShader = FragmentShader;
+    // this.#material.uniforms = {};
+    // this.#material.uniforms.colorOne = {value: new Color('#58ab27')};
+    // this.#material.uniforms.colorTwo = {value: new Color('#ff0000')};
+    // this.#material.transparent = true;
+    // this.#material.needsUpdate = true;
 
     // const canvasGradient = document.createElement('canvas');
     // const canvasGradientCtx = canvasGradient.getContext('2d') as CanvasRenderingContext2D;
@@ -149,8 +153,9 @@ fletching    shaft   point
     // canvasGradientCtx.fillStyle = grd;
     // canvasGradientCtx.fillRect(10, 10, 150, 80);
 
-    // this.#material = new MeshStandardMaterial();
-    // this.#material.color.set('#b43020');
+    this.#material = new MeshStandardMaterial();
+    this.#material.color.set('#b43020');
+    // this.#material.wireframe = true;
     // this.#material.alphaMap = new Texture(canvasGradient);
     // this.#material.alphaTest = .5;
     // this.#material.transparent = true;
@@ -228,7 +233,11 @@ fletching    shaft   point
   private setSizes() {
     this.#sizes.curveLength = this.#curve.getLength();
     const lengthBetweenFromAndTo = this.#sizes.curveLength * .48;
-    this.#sizes.shaftWidth = lengthBetweenFromAndTo - this.#sizes.fletchingWidth - this.#sizes.pointWidth;
+    this.#sizes.shaftWidth =
+        lengthBetweenFromAndTo
+        - this.#sizes.fletchingWidth
+        - this.#sizes.pointWidth
+        - this.#sizes.gradientWidth;
     this.#sizes.shaftSegments = Math.ceil(lengthBetweenFromAndTo / 4) * 4;
     // console.log('curv size', this.#sizes);
   }
@@ -238,7 +247,11 @@ fletching    shaft   point
     const fletching = getFletchingGeometry(this.#sizes);
     const shaft = getShaftGeometry(this.#sizes);
     const point = getPointGeometry(this.#sizes);
-    this.#geometry = mergeBufferGeometries([fletching, shaft, point]);
+    this.#geometry = mergeBufferGeometries([
+      fletching,
+      // shaft,
+      point
+    ]);
     // this.#geometry = point;
   }
 
@@ -250,32 +263,28 @@ fletching    shaft   point
     this.#mesh.name = 'movement';
     this.#flow = new Flow(this.#mesh);
     this.#flow.object3D.layers.enable(1);
+    this.updateMesh();
     // console.log((this.#flow.object3D.material as MeshStandardMaterial).onBeforeCompile);
     // (this.#flow.object3D.material as MeshStandardMaterial).onBeforeCompile = (shader) => {
     //   shader.fragmentShader = shader + 'dfsfds';
     //   console.log(shader.fragmentShader);
     // };
-    // this.#flow.object3D.matrixAutoUpdate = false;
+    this.#flow.object3D.matrixAutoUpdate = false;
     this.#flow.updateCurve(0, this.#curve);
-    // this.#flow.uniforms.spineTexture.value.matrixAutoUpdate = false;
+    this.#flow.uniforms.spineTexture.value.matrixAutoUpdate = false;
     this.#flow.uniforms.spineOffset.value = movementSize * .5;
     (this.#flow.uniforms as SplineUniformInterface).spineLength.value = this.#sizes.curveLength;
     this.#flow.uniforms.pathOffset.value = .48;
-    // this.#scene.add(this.#flow.object3D);
-    this.#scene.add(this.#flow.object3D);
-    // console.log(this.#flow); // TODO DELETE=====================================
-    this.#scene.add(this.#mesh);
-  
+    this.#scene.add(this.#flow.object3D, this.#mesh);
+    // this.#scene.add(this.#mesh);
+    console.log(this.#flow); // TODO DELETE=====================================
   }
 
 
-  /**
-   * Set Animation, more info https://info.com/
-   */
   private setAnimation() {
     let clip = this.#animation.getClip(movementClipName);
     if (!clip) {
-      clip = getMovementAnimationClip(this.#animationName, 2);
+      clip = getMovementAnimationClip(this.#animationName, 20);
       this.#animation.setClip(movementClipName, clip);
     }
     // @ts-ignore
@@ -293,6 +302,135 @@ fletching    shaft   point
 
   private addToRaycaster() {
     this.#raycaster.setIntersectObjects(this.#flow.object3D);
+  }
+
+
+  private updateMesh1() {
+    return;
+    console.log('mesh', this.#mesh);
+    const positions = this.#mesh.geometry.getAttribute('position');
+    const uniforms = this.#flow.uniforms as SplineUniformInterface;
+    const spineTexture = uniforms.spineTexture.value as DataTexture;
+    const pathOffset = uniforms.pathOffset.value;
+    const pathSegment = uniforms.pathSegment.value;
+    const spineOffset = uniforms.pathOffset.value;
+    const spineLength = uniforms.spineLength.value;
+    const flow = uniforms.flow.value;
+    const modelViewMatrix = this.#mesh.modelViewMatrix.elements;
+    const normalMatrix = this.#mesh.normalMatrix;
+    const modelMatrix = this.#mesh.matrixWorld.elements;
+    const projectionMatrix = this.#main.camera.instance.projectionMatrix.elements;
+
+    const textureLayers = TEXTURE_HEIGHT * this.#flow.curveArray.length;
+    const textureStacks = TEXTURE_HEIGHT / 4;
+
+    for (let i = 0; i < positions.count; i++) {
+      // TODO Implement instancing when/if needed
+      const x = positions.array[i];
+      const y = positions.array[i + 1];
+      const z = positions.array[i + 2];
+
+      // vec4 worldPos = modelMatrix * vec4(position, 1.);
+      const worldPos = new Vector4(0, 0, 0, 1);
+      worldPos.x =
+          modelMatrix[0] * x + modelMatrix[1] * y + modelMatrix[2] * z + modelMatrix[3];
+      worldPos.y =
+          modelMatrix[4] * x + modelMatrix[5] * y + modelMatrix[6] * z + modelMatrix[7];
+      worldPos.z =
+          modelMatrix[8] * x + modelMatrix[9] * y + modelMatrix[10] * z + modelMatrix[11];
+
+      const bend = flow > 0;
+      const xWeight = bend ? 0 : 1;
+      const spinePortion = bend ? (worldPos.x + spineOffset) / spineLength : 0;
+      let mt = (spinePortion * pathSegment + pathOffset) * textureStacks;
+
+      mt = mt % textureStacks;
+      const rowOffset = Math.round(mt);
+      console.log('mt', mt, rowOffset);
+
+      const img = spineTexture.image;
+      // console.log(
+      //     'img', // img, this.#flow.splineTexure
+      //     img.data[(0 + rowOffset + .5) / textureLayers], (0 + rowOffset + .5) / textureLayers,
+      //     img.data[(1 + rowOffset + .5) / textureLayers], (1 + rowOffset + .5) / textureLayers
+      // );
+      // experiment ==============================
+      // const ii = CHANNELS + TEXTURE_WIDTH * o;
+      // experiment ==============================
+      const spinePos = new Vector3(
+          img.data[0],
+          img.data[0],
+          img.data[0]
+      );
+      const a = new Vector3();
+      const b = new Vector3();
+      const c = new Vector3();
+
+      const basis = new Matrix3().set(
+        a.x, a.y, a.z,
+        b.x, b.y, b.z,
+        c.x, c.y, c.z
+      );
+
+      const transformed = new Vector3(
+          basis.elements[0] * worldPos.x * xWeight
+          + basis.elements[1] * worldPos.y * xWeight
+          + basis.elements[2] * worldPos.z * xWeight,
+
+          basis.elements[3] * worldPos.x
+          + basis.elements[4] * worldPos.y
+          + basis.elements[5] * worldPos.z,
+
+          basis.elements[6] * worldPos.x
+          + basis.elements[7] * worldPos.y
+          + basis.elements[8] * worldPos.z,
+      ).add(spinePos);
+
+      // vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 )
+      const mvPosition = new Vector4(0, 0, 0, 1);
+      mvPosition.x =
+          modelViewMatrix[0] * transformed.x
+          + modelViewMatrix[1] * transformed.y
+          + modelViewMatrix[2] * transformed.z
+          + modelViewMatrix[3];
+      mvPosition.y =
+          modelViewMatrix[4] * transformed.x
+          + modelViewMatrix[5] * transformed.y
+          + modelViewMatrix[6] * transformed.z
+          + modelViewMatrix[7];
+      mvPosition.z =
+          modelViewMatrix[8] * transformed.x
+          + modelViewMatrix[9] * transformed.y
+          + modelViewMatrix[10] * transformed.z
+          + modelViewMatrix[11];
+
+      // gl_Position = projectionMatrix * mvPosition;
+      // @ts-ignore
+      positions.array[i * 3] =
+        projectionMatrix[0] * mvPosition.x
+        + projectionMatrix[1] * mvPosition.y
+        + projectionMatrix[2] * mvPosition.z
+        + projectionMatrix[3];
+      // @ts-ignore
+      positions.array[i * 3 + 1] =
+          projectionMatrix[4] * mvPosition.x
+        + projectionMatrix[5] * mvPosition.y
+        + projectionMatrix[6] * mvPosition.z
+        + projectionMatrix[7];
+      // @ts-ignore
+      positions.array[i * 3 + 2] =
+        projectionMatrix[8] * mvPosition.x
+        + projectionMatrix[9] * mvPosition.y
+        + projectionMatrix[10] * mvPosition.z
+        + projectionMatrix[11];
+    }
+    this.#mesh.geometry.setAttribute('position', positions);
+    console.log('positions', positions);
+  }
+
+
+  private updateMesh() {
+      getCurvedPointGeometry(this.#sizes, this.#flow.splineTexure);
   }
 
 
@@ -375,7 +513,7 @@ const getFletchingGeometry = (sizes: movementSizesType) => {
 
 
 const getPointGeometry = (sizes: movementSizesType) => {
-  const {shaftHeight, shaftWidth, depth, pointWidth, pointHeight} = sizes;
+  const {shaftHeight, shaftWidth, depth, pointWidth, pointHeight, gradientWidth} = sizes;
   const shape = new Shape();
 
   //  .
@@ -391,17 +529,30 @@ const getPointGeometry = (sizes: movementSizesType) => {
   //  /
   shape.lineTo(0, -pointHeight * .5);
 
-  //  .
-  shape.moveTo(0, shaftHeight * .5);
+  // |\
+  // |/
+  // shape.lineTo(0, -shaftHeight * .5);
+  const point = mergeVertices(new ExtrudeBufferGeometry(shape, {bevelEnabled: false, depth: depth}));
+  const gradient = new BoxBufferGeometry(gradientWidth, shaftHeight, depth, 4);
+  gradient.translate(-gradientWidth * .5, 0, depth * .5);
 
-  const geometry = new ExtrudeBufferGeometry(shape, {
-    bevelEnabled: false,
-    depth: depth
-  });
-  geometry.translate(shaftWidth * .5, 0, -depth * .5);
+  const geometry = mergeBufferGeometries([point, gradient]);
+  geometry.translate((shaftWidth * .5) + gradientWidth, 0, -depth * .5);
 
-  return mergeVertices(geometry);
+  return geometry;
 };
+
+
+const getCurvedPointGeometry = (sizes: movementSizesType, texture: DataTexture) => {
+  const {gradientWidth, pointWidth, shaftWidth, fletchingWidth} = sizes;
+  const pointGradientSize = pointWidth + gradientWidth;
+  const movementWidth = fletchingWidth + shaftWidth + pointGradientSize;
+  const pointPercent = pointGradientSize / movementWidth;
+  const img = texture.image.data;
+
+  console.log('percent', pointPercent, texture.image.data);
+};
+
 
 // tslint:disable:no-non-null-assertion
 const setDebugMovementsFolder = () => {

@@ -15,15 +15,19 @@ import {
   ExtrudeBufferGeometry,
   MeshPhysicalMaterial,
   MeshLambertMaterial,
-  LoopOnce,
+  LoopOnce, ShaderMaterial, Texture, DoubleSide, Color, Vector2, DataTexture
 } from 'three';
 import {mergeBufferGeometries, mergeVertices} from 'three/examples/jsm/utils/BufferGeometryUtils';
-
 import Main from '../../Main';
-import {TilePositionType} from '../../@types/Map';
 import {Flow, SplineUniformInterface} from '../../Utils/CurveModifier';
 import {getCoordinates, getVertexPositionForBufferAttributes} from './MapHelpers';
+import FragmentShader from '../../Shaders/SettlementMovements/Fragment.glsl';
+import VertexShader from '../../Shaders/SettlementMovements/Vertex.glsl';
+
+import {TilePositionType} from '../../@types/Map';
 import {ContinentInterface} from '../../@types/Continent';
+// import VertexShader from "../../Shaders/SelectionVoxel/Vertex.glsl";
+// import FragmentShader from "../../Shaders/SelectionVoxel/Fragment.glsl";
 
 type movementSizesType = {
   shaftWidth: number,
@@ -69,8 +73,9 @@ export class SettlementMovements {
   #main: Main;
   #scene: Main['scene'];
   #debug: Main['debug'];
+  #raycaster: Main['raycaster'];
   #movementConfig: movementConfigType;
-  #material!: MeshStandardMaterial | MeshPhysicalMaterial | MeshLambertMaterial;
+  #material!: MeshStandardMaterial | MeshPhysicalMaterial | MeshLambertMaterial | ShaderMaterial;
   #animation: Main['animation'];
   #animationName: string;
   #voxel: Main['config']['world']['voxel'];
@@ -78,7 +83,6 @@ export class SettlementMovements {
   #mesh!: Mesh;
   #geometry!: BufferGeometry;
   #flow!: Flow;
-  hlp!: any;
   #sizes: movementSizesType = {
     /*
         >>>--------|>
@@ -86,7 +90,7 @@ export class SettlementMovements {
 fletching    shaft   point
    */
     shaftWidth: 0,
-    shaftHeight: .7,
+    shaftHeight: .5,
     shaftSegments: 0,
 
     pointWidth: 1,
@@ -96,7 +100,7 @@ fletching    shaft   point
     fletchingHeight: 1,
     fletchingInside: .4,
 
-    depth: .2,
+    depth: .1,
     depthSegments: 10,
     curveLength: 0,
     offsetFromTile: 2,
@@ -105,6 +109,7 @@ fletching    shaft   point
   constructor(config: movementConfigType) {
     this.#main = new Main();
     this.#voxel = this.#main.config.world.voxel;
+    this.#raycaster = this.#main.raycaster;
     this.#animation = this.#main.animation;
     this.#debug = this.#main.debug;
     this.#scene = this.#main.scene;
@@ -117,12 +122,49 @@ fletching    shaft   point
     this.setGeometry();
     this.setMesh();
     this.setAnimation();
-    this.setDebug();
+    this.addToRaycaster();
+
+    if (this.#debug.active) {
+      setDebugMovementsFolder();
+      this.setDebug();
+    }
   }
 
 
   private setMaterial() {
-    this.#material = new MeshStandardMaterial({color: '#b43020'});
+    this.#material = new ShaderMaterial();
+    this.#material.vertexShader = VertexShader;
+    this.#material.fragmentShader = FragmentShader;
+    this.#material.uniforms = {};
+    this.#material.uniforms.colorOne = {value: new Color('#58ab27')};
+    this.#material.uniforms.colorTwo = {value: new Color('#ff0000')};
+    this.#material.transparent = true;
+    this.#material.needsUpdate = true;
+
+    // const canvasGradient = document.createElement('canvas');
+    // const canvasGradientCtx = canvasGradient.getContext('2d') as CanvasRenderingContext2D;
+    // const grd = canvasGradientCtx.createLinearGradient(0, 0, 200, 0);
+    // grd.addColorStop(0, '#000000');
+    // grd.addColorStop(1, '#000000');
+    // canvasGradientCtx.fillStyle = grd;
+    // canvasGradientCtx.fillRect(10, 10, 150, 80);
+
+    // this.#material = new MeshStandardMaterial();
+    // this.#material.color.set('#b43020');
+    // this.#material.alphaMap = new Texture(canvasGradient);
+    // this.#material.alphaTest = .5;
+    // this.#material.transparent = true;
+    // this.#material.onBeforeCompile = (shader) => {
+    //   shader.fragmentShader = shader.fragmentShader.replace('gl_FragColor = vec4(1)', 'gl_FragColor = vec4(0)')
+    //   console.log('before compile', shader);
+    // };
+    // (async () => {
+    //   (this.#material as MeshStandardMaterial).map =
+    //       await this.#main.resources.getSource(this.#main.map.sea.material.texture) as Texture;
+    //   this.#material.needsUpdate = true;
+    //   console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+    // })();
+
     // this.#material.side = DoubleSide;
     // this.#material = new MeshLambertMaterial({color: '#b43020'});
     // this.#material.opacity = .5;
@@ -146,7 +188,7 @@ fletching    shaft   point
     ];
     const fromXYZ = new Vector3(...getVertexPositionForBufferAttributes(
       this.#voxel,
-      {x: 0, y: this.#voxel.depth, z: 0},
+      {x: 0, y: this.#voxel.depth * 1.5, z: 0},
       {x: fromXZ.x, y: fromY, z: fromXZ.z}
     ));
 
@@ -157,14 +199,14 @@ fletching    shaft   point
     ];
     const toXYZ = new Vector3(...getVertexPositionForBufferAttributes(
       this.#voxel,
-      {x: 0, y: this.#voxel.depth, z: 0},
+      {x: 0, y: this.#voxel.depth * 1.5, z: 0},
       {x: toXZ.x, y: toY, z: toXZ.z}
     ));
 
     // Before From
     const distance = fromXYZ.distanceTo(toXYZ);
     const beforeFromXYZ = new Vector3().copy(fromXYZ);
-    beforeFromXYZ.y = - distance;
+    beforeFromXYZ.y -= distance;
 
     // After To
     /*
@@ -188,76 +230,7 @@ fletching    shaft   point
     const lengthBetweenFromAndTo = this.#sizes.curveLength * .48;
     this.#sizes.shaftWidth = lengthBetweenFromAndTo - this.#sizes.fletchingWidth - this.#sizes.pointWidth;
     this.#sizes.shaftSegments = Math.ceil(lengthBetweenFromAndTo / 4) * 4;
-    console.log('curv size', this.#sizes);
-  }
-
-
-  // TODO DELETE
-  private setDebug() {
-    // ========================
-    const points = this.#curve.getPoints( 50 );
-    const line = new LineLoop(
-      new BufferGeometry().setFromPoints( points ),
-      new LineBasicMaterial( { color: '#8c00ff' } )
-    );
-    // line.geometry.computeTangents();
-    // const helper = new VertexTangentsHelper(line);
-    this.#scene.add(line);
-    // ========================
-    this.hlp = new Mesh(new BoxBufferGeometry(.4, .4, .4), new MeshStandardMaterial({
-      color: '#00ff00'
-    }));
-    this.#scene.add(this.hlp);
-    // ========================
-
-    const pos1 = getCoordinates(this.#movementConfig.from.position);
-    const pos1y = this.#movementConfig.from.continent.landscape.peakLevels[
-      this.#movementConfig.from.continent.landscape.tiles.indexOf(this.#movementConfig.from.position)
-    ];
-    const pos2 = getCoordinates(this.#movementConfig.to.position);
-    const pos2y = this.#movementConfig.to.continent.landscape.peakLevels[
-      this.#movementConfig.to.continent.landscape.tiles.indexOf(this.#movementConfig.to.position)
-      ];
-
-    const mesh1 = new Mesh(
-      new BoxBufferGeometry(.3, .3, .3),
-      new MeshStandardMaterial({color: '#ffff00'})
-    );
-    mesh1.position.set(...getVertexPositionForBufferAttributes(
-        this.#voxel,
-        {x: 0, y: this.#voxel.depth, z: 0},
-        {x: pos1.x, y: pos1y, z: pos1.z}
-    ));
-    const mesh2 = new Mesh(
-      new BoxBufferGeometry(.3, .3, .3),
-      new MeshStandardMaterial({color: '#ffff00'})
-    );
-    mesh2.position.set(...getVertexPositionForBufferAttributes(
-        this.#voxel,
-        {x: 0, y: this.#voxel.depth, z: 0},
-        {x: pos2.x, y: pos2y, z: pos2.z}
-    ));
-
-    // ================
-    const start = new Mesh(new BoxBufferGeometry(.5, .5, .5), new MeshStandardMaterial({
-      color: '#000000',
-      transparent: true,
-      opacity: .4
-    }));
-    const end = new Mesh(new BoxBufferGeometry(.5, .5, .5), new MeshStandardMaterial({
-      color: '#000000',
-      transparent: true,
-      opacity: .4
-    }));
-    start.position.set(-20, 0, 0);
-    end.position.set(20, 0, 0);
-
-    this.#scene.add(
-      start,
-      end,
-      mesh2,
-      mesh1
-    );
+    // console.log('curv size', this.#sizes);
   }
 
 
@@ -266,6 +239,7 @@ fletching    shaft   point
     const shaft = getShaftGeometry(this.#sizes);
     const point = getPointGeometry(this.#sizes);
     this.#geometry = mergeBufferGeometries([fletching, shaft, point]);
+    // this.#geometry = point;
   }
 
 
@@ -273,18 +247,31 @@ fletching    shaft   point
     const movementSize = this.#sizes.fletchingWidth + this.#sizes.shaftWidth + this.#sizes.pointWidth;
 
     this.#mesh = new Mesh(this.#geometry, this.#material);
+    this.#mesh.name = 'movement';
     this.#flow = new Flow(this.#mesh);
-    this.#flow.object3D.matrixAutoUpdate = false;
+    this.#flow.object3D.layers.enable(1);
+    // console.log((this.#flow.object3D.material as MeshStandardMaterial).onBeforeCompile);
+    // (this.#flow.object3D.material as MeshStandardMaterial).onBeforeCompile = (shader) => {
+    //   shader.fragmentShader = shader + 'dfsfds';
+    //   console.log(shader.fragmentShader);
+    // };
+    // this.#flow.object3D.matrixAutoUpdate = false;
     this.#flow.updateCurve(0, this.#curve);
-    this.#flow.uniforms.spineTexture.value.matrixAutoUpdate = false;
+    // this.#flow.uniforms.spineTexture.value.matrixAutoUpdate = false;
     this.#flow.uniforms.spineOffset.value = movementSize * .5;
     (this.#flow.uniforms as SplineUniformInterface).spineLength.value = this.#sizes.curveLength;
     this.#flow.uniforms.pathOffset.value = .48;
+    // this.#scene.add(this.#flow.object3D);
     this.#scene.add(this.#flow.object3D);
-    console.log(this.#flow); // TODO DELETE=====================================
+    // console.log(this.#flow); // TODO DELETE=====================================
+    this.#scene.add(this.#mesh);
+  
   }
 
 
+  /**
+   * Set Animation, more info https://info.com/
+   */
   private setAnimation() {
     let clip = this.#animation.getClip(movementClipName);
     if (!clip) {
@@ -301,6 +288,39 @@ fletching    shaft   point
       getMovementAnimationName(this.#movementConfig.from.position, this.#movementConfig.to.position),
       mixer
     );
+  }
+
+
+  private addToRaycaster() {
+    this.#raycaster.setIntersectObjects(this.#flow.object3D);
+  }
+
+
+  private setDebug() {
+    const points = this.#curve.getPoints(50);
+    const line = new LineLoop(
+      new BufferGeometry().setFromPoints( points ),
+      new LineBasicMaterial( { color: '#8c00ff' } )
+    );
+    this.#scene.add(line);
+
+    // GUI
+    const list = document.querySelector('.movements-debug__list') as Element;
+    const info = document.createElement('div');
+    info.innerHTML = `
+      ${this.#movementConfig.from.position} -> ${this.#movementConfig.to.position}
+      <button type="button" class="movements-debug__delete">del</button>
+    `;
+    (info.querySelector('.movements-debug__delete') as Element).addEventListener('click', () => {
+      this.#scene.remove(
+          // tslint:disable-next-line:no-non-null-assertion
+        this.#scene.getObjectById(this.#flow.object3D.id)!,
+          // tslint:disable-next-line:no-non-null-assertion
+        this.#scene.getObjectById(line.id)!
+      );
+      info.remove();
+    });
+    list.append(info);
   }
 }
 
@@ -381,4 +401,90 @@ const getPointGeometry = (sizes: movementSizesType) => {
   geometry.translate(shaftWidth * .5, 0, -depth * .5);
 
   return mergeVertices(geometry);
+};
+
+// tslint:disable:no-non-null-assertion
+const setDebugMovementsFolder = () => {
+  const className = 'movements-debug';
+  if (document.querySelector(`.${className}`)) {return;}
+
+  const ui = document.querySelector('.dg.main > ul') as HTMLElement;
+  const listEl = document.createElement('li');
+  listEl.classList.add(className, 'folder');
+
+  listEl.innerHTML = `
+    <div class="dg">
+      <ul class="closed">
+        <li class="title">Movements</li>
+        <li class="cr">
+          <div class="movements-debug__list" style="margin-bottom: .25rem; padding-bottom: .25rem; border-bottom: 1px dotted #ddd"></div>
+          <strong>Add new movement</strong>
+          <form class="movements-debug__form" style="display: flex">
+            <div style="margin-right: .5rem">
+              <strong style="display: block">From</strong>
+              <label for="movements-from-position">Position</label>
+              <input type="number" id="movements-from-position">
+              <hr>
+              <label for="movements-from-continent-id">Continent ID</label>
+              <input type="number" id="movements-from-continent-id">
+            </div>
+            <div style="margin-right: .5rem">
+              <strong style="display: block">To</strong>
+              <label for="movements-to-position">Position</label>
+              <input type="number" id="movements-to-position">
+              <hr>
+              <label for="movements-to-continent-id">Continent ID</label>
+              <input type="number" id="movements-to-continent-id">
+            </div>
+            <div style="width: 100%">
+              <button type="button" style="height: 100%; width: 100%" class="movements-debug__add">Add</button>
+            </div>
+          </form>
+        </li>
+      </ul>
+    </div>
+  `;
+  ui.append(listEl);
+
+  // Open/Close folder
+  (listEl.querySelector('.title') as HTMLElement).addEventListener('click', (e) => {
+    const parent = (e.target as Element).parentElement as Element;
+    if (parent.classList.contains('closed')) {
+      parent.classList.remove('closed');
+      // @ts-ignore
+      parent.querySelector('.cr').style.height = 'auto';
+    } else {
+      parent.classList.add('closed');
+      // @ts-ignore
+      parent.querySelector('.cr').style.height = 0;
+    }
+  });
+
+  // Add new Movement
+  (listEl.querySelector('.movements-debug__add') as HTMLElement).addEventListener('click', () => {
+    const from = {
+      // @ts-ignore
+      position: listEl.querySelector('#movements-from-position').value,
+      // @ts-ignore
+      continentId: listEl.querySelector('#movements-from-continent-id').value
+    };
+    const to = {
+      // @ts-ignore
+      position: listEl.querySelector('#movements-to-position').value,
+      // @ts-ignore
+      continentId: listEl.querySelector('#movements-to-continent-id').value
+    };
+
+    const main = new Main();
+    const movement = new SettlementMovements({
+      from: {
+          continent: main.world!.continents.continentByMeshId[from.continentId],
+          position: Number(from.position)
+        },
+        to: {
+          continent: main.world!.continents.continentByMeshId[to.continentId],
+          position: Number(to.position)
+        }
+    });
+  });
 };

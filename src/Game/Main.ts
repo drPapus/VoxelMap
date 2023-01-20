@@ -41,7 +41,7 @@ export default class Main {
   config!: ConfigInterface;
   map!: MapInterface;
   animation!: AnimationMixer;
-  raycaster?: Raycaster;
+  raycaster!: Raycaster;
   controls?: Controls;
 
 
@@ -96,7 +96,7 @@ export default class Main {
 
   onTick() {
     this.world?.update();
-    this.raycaster?.update();
+    this.raycaster.update();
     this.controls?.update();
     this.camera.update();
     this.animation.update();

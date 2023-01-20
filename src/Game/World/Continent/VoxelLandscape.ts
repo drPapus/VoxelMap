@@ -161,6 +161,7 @@ export class VoxelLandscape {
     }
 
     this.#material = new MeshStandardMaterial();
+    this.#material.visible = false;
     Cache.add(key, this.#material);
     this.#material.roughness = 1;
 

@@ -11,10 +11,10 @@ export default class World {
   movements2!: SettlementMovements;
   movements3!: SettlementMovements;
   movements4!: SettlementMovements;
-  sea: Sea;
+  // sea: Sea;
 
   constructor() {
-    this.sea = new Sea();
+    // this.sea = new Sea();
     this.continents = new Continents();
     this.environment = new Environment();
     // this.movements = new SettlementMovements({

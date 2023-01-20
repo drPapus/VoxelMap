@@ -43,7 +43,7 @@ export default class Raycaster {
     this.#continents = this.#main.world!.continents;
 
     this.instance.layers.set(1);
-    this.setIntersectObjects();
+    // this.setIntersectObjects();
 
     window.addEventListener('pointermove', (e) => {
       this.onPointerMove(e);
@@ -55,11 +55,13 @@ export default class Raycaster {
   }
 
 
-  setIntersectObjects() {
-    for (const continent of Object.values(this.#continents.continents)) {
-      if (continent.status === 'disabled') {continue;}
-      this.#intersectObjects.push(continent.landscape.mesh as Mesh);
-    }
+  setIntersectObjects(obj: Mesh) {
+    // for (const continent of Object.values(this.#continents.continents)) {
+    //   if (continent.status === 'disabled') {continue;}
+    //   this.#intersectObjects.push(continent.landscape.mesh as Mesh);
+    // }
+
+      this.#intersectObjects.push(obj);
   }
 
 
@@ -73,6 +75,9 @@ export default class Raycaster {
       this.clear();
       return;
     }
+
+    console.log('intersect name', intersects[0].object.name);
+    return;
 
     const intersectLand =
       intersects[0].object.name === voxelLandscapeMeshName
@@ -148,7 +153,9 @@ export default class Raycaster {
           coordinates: getCoordinates(
             // tslint:disable-next-line:no-non-null-assertion
             this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
-          )
+          ),
+          // tslint:disable-next-line:no-non-null-assertion
+          continentId: this.#intersectedLand!
         });
         // TODO END DELETE ==============================
       }
@@ -178,7 +185,8 @@ export default class Raycaster {
       ,
       coordinates: getCoordinates(
         this.#continents.continentByMeshId[this.#intersectedLand!].tiles![this.#intersectedTile!].position
-      )
+      ),
+      continentId: this.#intersectedLand!
     });
     // TODO END DELETE ==============================
 

@@ -90,7 +90,6 @@ function updateSplineTexture(texture: DataTexture, splineCurve: Curve<Vector3>, 
   texture.needsUpdate = true;
 }
 
-
 Flow.prototype.updateCurve = function(index: number, curve: Curve<Vector3>) {
   if (index >= this.curveArray.length) {
     throw Error('Index out of range for Flow');

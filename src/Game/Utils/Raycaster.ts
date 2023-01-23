@@ -13,6 +13,21 @@ import SelectionVoxel from '../Controls/SelectionVoxel';
 import Continents from '../World/Continents';
 import {getCoordinates} from '../World/Continent/MapHelpers';
 
+const intrsct = document.createElement('span');
+intrsct.innerText = 'INTERSECTED';
+intrsct.style.cssText = `
+  position: absolute;
+  display: block;
+  padding: .5rem 1rem;
+  z-index: 99;
+  top: 30%;
+  left: 10%;
+  background: #fff;
+  font-weight: bold;
+  box-shadow: 0 0 30px #000;
+`;
+document.body.appendChild(intrsct);
+
 
 export default class Raycaster {
   instance: ThreeRaycaster;
@@ -72,11 +87,17 @@ export default class Raycaster {
     const intersects = this.instance.intersectObjects(this.#intersectObjects);
 
     if (!intersects.length) {
+      intrsct.style.background = '#fff';
       this.clear();
       return;
     }
 
     console.log('intersect name', intersects[0].object.name);
+    if (intersects[0].object.name === 'movement') {
+      intrsct.style.background = 'red';
+    } else {
+      intrsct.style.background = '#fff';
+    }
     return;
 
     const intersectLand =

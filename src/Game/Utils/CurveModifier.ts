@@ -20,7 +20,19 @@ export const TEXTURE_WIDTH = 1024;
 export const TEXTURE_HEIGHT = 4;
 
 
-const computeFrames = (curve: Curve<Vector3>, segments: number) => {
+export const getTextureValue = (texture: DataTexture, index: number, offset: number): Vector3 => {
+  const {data} = texture.image;
+  const i = CHANNELS * TEXTURE_WIDTH * offset;
+  // console.log(i, index * CHANNELS + i, index, offset);
+  return new Vector3(
+      data[index * CHANNELS + i],
+      data[index * CHANNELS + i + 1],
+      data[index * CHANNELS + i + 2],
+  );
+};
+
+
+export const computeFrames = function(this: Curve<Vector3>, segments: number) {
   const normal = new Vector3();
   const binormal = new Vector3(0, 1, 0);
   const tangents = [];
@@ -30,7 +42,7 @@ const computeFrames = (curve: Curve<Vector3>, segments: number) => {
   for (let i = 0; i <= segments; i++) {
     const u = i / segments;
 
-    tangents[i] = curve.getTangentAt(u);
+    tangents[i] = this.getTangentAt(u);
 
     normal.crossVectors(binormal, tangents[i]);
     normal.y = 0; // to prevent lateral slope of the road
@@ -47,62 +59,3 @@ const computeFrames = (curve: Curve<Vector3>, segments: number) => {
     binormals: binormals
   };
 };
-
-
-function setTextureValue(
-  texture: DataTexture,
-  index: number,
-  x: number,
-  y: number,
-  z: number,
-  o: number
-) {
-  const image = texture.image;
-  const {data} = image;
-  const i = CHANNELS * TEXTURE_WIDTH * o; // Row Offset
-  data[index * CHANNELS + i + 0] = x;
-  data[index * CHANNELS + i + 1] = y;
-  data[index * CHANNELS + i + 2] = z;
-  data[index * CHANNELS + i + 3] = 1;
-}
-
-
-function updateSplineTexture(texture: DataTexture, splineCurve: Curve<Vector3>, offset = 0) {
-  const numberOfPoints = Math.floor(TEXTURE_WIDTH * (TEXTURE_HEIGHT / 4));
-  splineCurve.arcLengthDivisions = numberOfPoints / 2;
-  splineCurve.updateArcLengths();
-  const points = splineCurve.getSpacedPoints(numberOfPoints);
-  const frames = computeFrames(splineCurve, numberOfPoints);
-
-  console.log('nop', numberOfPoints, points, frames);
-
-  for (let i = 0; i < numberOfPoints; i++) {
-    const rowOffset = Math.floor(i / TEXTURE_WIDTH);
-    const rowIndex = i % TEXTURE_WIDTH;
-
-    let pt = points[i];
-    setTextureValue(texture, rowIndex, pt.x, pt.y, pt.z, 0 + rowOffset + (TEXTURE_HEIGHT * offset));
-    pt = frames.tangents[i];
-    setTextureValue(texture, rowIndex, pt.x, pt.y, pt.z, 1 + rowOffset + (TEXTURE_HEIGHT * offset));
-    pt = frames.normals[i];
-    setTextureValue(texture, rowIndex, pt.x, pt.y, pt.z, 2 + rowOffset + (TEXTURE_HEIGHT * offset));
-    pt = frames.binormals[i];
-    setTextureValue(texture, rowIndex, pt.x, pt.y, pt.z, 3 + rowOffset + (TEXTURE_HEIGHT * offset));
-  }
-  texture.needsUpdate = true;
-}
-
-
-Flow.prototype.updateCurve = function(index: number, curve: Curve<Vector3>) {
-  if (index >= this.curveArray.length) {
-    throw Error('Index out of range for Flow');
-  }
-  const curveLength = curve.getLength();
-  (this.uniforms as SplineUniformInterface).spineLength.value = curveLength;
-  this.curveLengthArray[index] = curveLength;
-  (this.curveArray as unknown as Curve<Vector3>[])[index] = curve;
-  updateSplineTexture(this.splineTexure, curve, index);
-};
-
-
-export {Flow};

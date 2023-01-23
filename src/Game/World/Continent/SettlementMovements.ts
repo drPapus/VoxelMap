@@ -15,11 +15,29 @@ import {
   ExtrudeBufferGeometry,
   MeshPhysicalMaterial,
   MeshLambertMaterial,
-  LoopOnce, ShaderMaterial, Texture, DoubleSide, Color, Vector2, DataTexture, Vector4, Matrix3, Matrix4
+  LoopOnce,
+  ShaderMaterial,
+  Texture,
+  DoubleSide,
+  Color,
+  Vector2,
+  DataTexture,
+  Vector4,
+  Matrix3,
+  Matrix4,
+  TubeGeometry,
+  MeshBasicMaterial, BoxGeometry
 } from 'three';
 import {mergeBufferGeometries, mergeVertices} from 'three/examples/jsm/utils/BufferGeometryUtils';
 import Main from '../../Main';
-import {CHANNELS, Flow, SplineUniformInterface, TEXTURE_HEIGHT, TEXTURE_WIDTH} from '../../Utils/CurveModifier';
+import {Flow} from 'three/examples/jsm/modifiers/CurveModifier';
+import {
+  computeFrames,
+  SplineUniformInterface,
+  TEXTURE_HEIGHT,
+  TEXTURE_WIDTH,
+  getTextureValue,
+} from '../../Utils/CurveModifier';
 import {getCoordinates, getVertexPositionForBufferAttributes} from './MapHelpers';
 import FragmentShader from '../../Shaders/SettlementMovements/Fragment.glsl';
 import VertexShader from '../../Shaders/SettlementMovements/Vertex.glsl';
@@ -28,8 +46,13 @@ import {TilePositionType} from '../../@types/Map';
 import {ContinentInterface} from '../../@types/Continent';
 import {randFloat, randInt} from "three/src/math/MathUtils";
 import {TubePainter} from "three/examples/jsm/misc/TubePainter";
+import {ExperimentTubeGeometry} from "../../Utils/ExperimentTubeGeometry";
 // import VertexShader from "../../Shaders/SelectionVoxel/Vertex.glsl";
 // import FragmentShader from "../../Shaders/SelectionVoxel/Fragment.glsl";
+
+
+CatmullRomCurve3.prototype.computeFrenetFrames = computeFrames;
+
 
 type movementSizesType = {
   shaftWidth: number,
@@ -155,7 +178,7 @@ fletching    shaft   point
 
     this.#material = new MeshStandardMaterial();
     this.#material.color.set('#b43020');
-    // this.#material.wireframe = true;
+    this.#material.wireframe = true;
     // this.#material.alphaMap = new Texture(canvasGradient);
     // this.#material.alphaTest = .5;
     // this.#material.transparent = true;
@@ -227,6 +250,7 @@ fletching    shaft   point
       [beforeFromXYZ, fromXYZ, toXYZ, afterToXYZ],
       false,
     );
+    console.log(this.#curve);
   }
 
 
@@ -239,7 +263,6 @@ fletching    shaft   point
         - this.#sizes.pointWidth
         - this.#sizes.gradientWidth;
     this.#sizes.shaftSegments = Math.ceil(lengthBetweenFromAndTo / 4) * 4;
-    // console.log('curv size', this.#sizes);
   }
 
 
@@ -249,7 +272,7 @@ fletching    shaft   point
     const point = getPointGeometry(this.#sizes);
     this.#geometry = mergeBufferGeometries([
       fletching,
-      // shaft,
+      shaft,
       point
     ]);
     // this.#geometry = point;
@@ -263,7 +286,6 @@ fletching    shaft   point
     this.#mesh.name = 'movement';
     this.#flow = new Flow(this.#mesh);
     this.#flow.object3D.layers.enable(1);
-    this.updateMesh();
     // console.log((this.#flow.object3D.material as MeshStandardMaterial).onBeforeCompile);
     // (this.#flow.object3D.material as MeshStandardMaterial).onBeforeCompile = (shader) => {
     //   shader.fragmentShader = shader + 'dfsfds';
@@ -275,6 +297,7 @@ fletching    shaft   point
     this.#flow.uniforms.spineOffset.value = movementSize * .5;
     (this.#flow.uniforms as SplineUniformInterface).spineLength.value = this.#sizes.curveLength;
     this.#flow.uniforms.pathOffset.value = .48;
+    this.updateMesh();
     this.#scene.add(this.#flow.object3D, this.#mesh);
     // this.#scene.add(this.#mesh);
     console.log(this.#flow); // TODO DELETE=====================================
@@ -306,39 +329,42 @@ fletching    shaft   point
 
 
   private updateMesh1() {
-    return;
-    console.log('mesh', this.#mesh);
+
+  }
+
+
+  private updateMesh() {
     const positions = this.#mesh.geometry.getAttribute('position');
+    const newPositions = positions.clone();
     const uniforms = this.#flow.uniforms as SplineUniformInterface;
     const spineTexture = uniforms.spineTexture.value as DataTexture;
     const pathOffset = uniforms.pathOffset.value;
     const pathSegment = uniforms.pathSegment.value;
-    const spineOffset = uniforms.pathOffset.value;
+    const spineOffset = uniforms.spineOffset.value;
     const spineLength = uniforms.spineLength.value;
     const flow = uniforms.flow.value;
-    const modelViewMatrix = this.#mesh.modelViewMatrix.elements;
+    const modelViewMatrix = this.#mesh.modelViewMatrix;
     const normalMatrix = this.#mesh.normalMatrix;
-    const modelMatrix = this.#mesh.matrixWorld.elements;
-    const projectionMatrix = this.#main.camera.instance.projectionMatrix.elements;
+    const modelMatrix = this.#mesh.matrixWorld;
+    const projectionMatrix = this.#main.camera.instance.projectionMatrix;
 
     const textureLayers = TEXTURE_HEIGHT * this.#flow.curveArray.length;
     const textureStacks = TEXTURE_HEIGHT / 4;
 
+    const numberOfPoints = Math.floor(TEXTURE_WIDTH * (TEXTURE_HEIGHT / 4));
+
     for (let i = 0; i < positions.count; i++) {
       // TODO Implement instancing when/if needed
-      const x = positions.array[i];
-      const y = positions.array[i + 1];
-      const z = positions.array[i + 2];
+      const x = positions.array[i * 3];
+      const y = positions.array[i * 3 + 1];
+      const z = positions.array[i * 3 + 2];
 
-      // vec4 worldPos = modelMatrix * vec4(position, 1.);
-      const worldPos = new Vector4(0, 0, 0, 1);
-      worldPos.x =
-          modelMatrix[0] * x + modelMatrix[1] * y + modelMatrix[2] * z + modelMatrix[3];
-      worldPos.y =
-          modelMatrix[4] * x + modelMatrix[5] * y + modelMatrix[6] * z + modelMatrix[7];
-      worldPos.z =
-          modelMatrix[8] * x + modelMatrix[9] * y + modelMatrix[10] * z + modelMatrix[11];
+      // console.log(x, y, z);
 
+      // shader: vec4 worldPos = modelMatrix * vec4(position, 1.);
+      const worldPos = matrixMultiplyByVector(modelMatrix, new Vector4(x, y, z, 1));
+
+      /* todo ORIG
       const bend = flow > 0;
       const xWeight = bend ? 0 : 1;
       const spinePortion = bend ? (worldPos.x + spineOffset) / spineLength : 0;
@@ -346,92 +372,73 @@ fletching    shaft   point
 
       mt = mt % textureStacks;
       const rowOffset = Math.round(mt);
-      console.log('mt', mt, rowOffset);
+      console.log('mt', mt, rowOffset); */
 
-      const img = spineTexture.image;
-      // console.log(
-      //     'img', // img, this.#flow.splineTexure
-      //     img.data[(0 + rowOffset + .5) / textureLayers], (0 + rowOffset + .5) / textureLayers,
-      //     img.data[(1 + rowOffset + .5) / textureLayers], (1 + rowOffset + .5) / textureLayers
-      // );
-      // experiment ==============================
-      // const ii = CHANNELS + TEXTURE_WIDTH * o;
-      // experiment ==============================
-      const spinePos = new Vector3(
-          img.data[0],
-          img.data[0],
-          img.data[0]
+      // experiment ==================================================================================
+      const vertexOffset = Math.floor(
+          (
+            pathOffset
+            + (spineOffset + worldPos.x) / spineLength * .48
+          )
+          * TEXTURE_WIDTH
       );
-      const a = new Vector3();
-      const b = new Vector3();
-      const c = new Vector3();
+      // const pointOnCurve = ((worldPos.x + spineOffset) / spineLength) * pathSegment + pathOffset;
+      const rowOffset = Math.floor(vertexOffset / TEXTURE_WIDTH);
+      const rowIndex = vertexOffset % TEXTURE_WIDTH;
+      console.log('poc', vertexOffset, rowIndex, rowOffset, );
+      // experiment ==================================================================================
 
+      const spinePos = getTextureValue(spineTexture, rowIndex, rowOffset);
+      const a = getTextureValue(spineTexture, rowIndex, 1 + rowOffset);
+      const b = getTextureValue(spineTexture, rowIndex, 2 + rowOffset);
+      const c = getTextureValue(spineTexture, rowIndex, 3 + rowOffset);
+
+      // console.log(spinePos, a, b, c);
+
+      // shader: mat3 basis = mat3(a, b, c);
       const basis = new Matrix3().set(
         a.x, a.y, a.z,
         b.x, b.y, b.z,
         c.x, c.y, c.z
       );
 
-      const transformed = new Vector3(
-          basis.elements[0] * worldPos.x * xWeight
-          + basis.elements[1] * worldPos.y * xWeight
-          + basis.elements[2] * worldPos.z * xWeight,
+      // shader:
+      // vec3 transformed = basis
+      //   * vec3(worldPos.x * xWeight, worldPos.y * 1., worldPos.z * 1.)
+      //   + spinePos;
+      const transformed =
+          (matrixMultiplyByVector(basis, new Vector3(worldPos.x, worldPos.y, worldPos.z)) as Vector3).add(spinePos);
 
-          basis.elements[3] * worldPos.x
-          + basis.elements[4] * worldPos.y
-          + basis.elements[5] * worldPos.z,
+      // shader: vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 )
+      const mvPosition = matrixMultiplyByVector(
+          modelViewMatrix,
+          new Vector4(transformed.x, transformed.y, transformed.z, 1)
+      );
 
-          basis.elements[6] * worldPos.x
-          + basis.elements[7] * worldPos.y
-          + basis.elements[8] * worldPos.z,
-      ).add(spinePos);
-
-      // vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 )
-      const mvPosition = new Vector4(0, 0, 0, 1);
-      mvPosition.x =
-          modelViewMatrix[0] * transformed.x
-          + modelViewMatrix[1] * transformed.y
-          + modelViewMatrix[2] * transformed.z
-          + modelViewMatrix[3];
-      mvPosition.y =
-          modelViewMatrix[4] * transformed.x
-          + modelViewMatrix[5] * transformed.y
-          + modelViewMatrix[6] * transformed.z
-          + modelViewMatrix[7];
-      mvPosition.z =
-          modelViewMatrix[8] * transformed.x
-          + modelViewMatrix[9] * transformed.y
-          + modelViewMatrix[10] * transformed.z
-          + modelViewMatrix[11];
-
-      // gl_Position = projectionMatrix * mvPosition;
-      // @ts-ignore
-      positions.array[i * 3] =
-        projectionMatrix[0] * mvPosition.x
-        + projectionMatrix[1] * mvPosition.y
-        + projectionMatrix[2] * mvPosition.z
-        + projectionMatrix[3];
-      // @ts-ignore
-      positions.array[i * 3 + 1] =
-          projectionMatrix[4] * mvPosition.x
-        + projectionMatrix[5] * mvPosition.y
-        + projectionMatrix[6] * mvPosition.z
-        + projectionMatrix[7];
-      // @ts-ignore
-      positions.array[i * 3 + 2] =
-        projectionMatrix[8] * mvPosition.x
-        + projectionMatrix[9] * mvPosition.y
-        + projectionMatrix[10] * mvPosition.z
-        + projectionMatrix[11];
+      // shader: gl_Position = projectionMatrix * mvPosition;
+      const glPosition = matrixMultiplyByVector(projectionMatrix, mvPosition);
+      (newPositions.array as Array<number>)[i * 3] = glPosition.x;
+      (newPositions.array as Array<number>)[i * 3 + 1] = glPosition.y;
+      (newPositions.array as Array<number>)[i * 3 + 2] = glPosition.z;
     }
-    this.#mesh.geometry.setAttribute('position', positions);
-    console.log('positions', positions);
+    this.#mesh.geometry.setAttribute('position', newPositions);
+    console.log('positions', newPositions);
   }
 
 
-  private updateMesh() {
+  /*private updateMesh() {
       getCurvedPointGeometry(this.#sizes, this.#flow.splineTexure);
-  }
+      const frames = computeFrames(this.#curve, Math.floor(TEXTURE_WIDTH * (TEXTURE_HEIGHT / 4)));
+      const tube = new ExperimentTubeGeometry(this.#curve, frames, 1024, 1, 4, true);
+      // tube.normals = frames.normals;
+      // tube.binormals = frames.binormals;
+      // tube.tangents = frames.tangents;
+      const mesh = new Mesh(tube, this.#material);
+      mesh.name = 'movement';
+      mesh.layers.enable(1);
+      this.#raycaster.setIntersectObjects(mesh);
+      this.#scene.add(mesh);
+  } */
 
 
   private setDebug() {
@@ -543,15 +550,31 @@ const getPointGeometry = (sizes: movementSizesType) => {
 };
 
 
-const getCurvedPointGeometry = (sizes: movementSizesType, texture: DataTexture) => {
+/*
+const getCurvedPointGeometry = (
+    sizes: movementSizesType,
+    texture: DataTexture,
+    startPoint: number = .5,
+    endPoint: number = .6,
+) => {
   const {gradientWidth, pointWidth, shaftWidth, fletchingWidth} = sizes;
   const pointGradientSize = pointWidth + gradientWidth;
   const movementWidth = fletchingWidth + shaftWidth + pointGradientSize;
   const pointPercent = pointGradientSize / movementWidth;
-  const img = texture.image.data;
 
+  const normal = new Vector3();
+  const binormal = new Vector3();
+  const tangent = new Vector3();
+  for (let i = 512; i < 540; i++) {
+    const rowOffset = Math.floor(i / TEXTURE_WIDTH);
+    const rowIndex = i % TEXTURE_WIDTH;
+
+    getTextureValue(texture, rowIndex, 0 + rowOffset, normal);
+    getTextureValue(texture, rowIndex, 0 + rowOffset, binormal);
+    getTextureValue(texture, rowIndex, 0 + rowOffset, tangent);
+  }
   console.log('percent', pointPercent, texture.image.data);
-};
+}; */
 
 
 // tslint:disable:no-non-null-assertion
@@ -638,4 +661,25 @@ const setDebugMovementsFolder = () => {
         }
     });
   });
+};
+
+
+const matrixMultiplyByVector = (matrix: Matrix4 | Matrix3, vector: Vector4 | Vector3): Vector4 | Vector3 => {
+  const result = matrix instanceof Matrix4 ? new Vector4() : new Vector3();
+  const matElements = matrix.elements;
+  const {x, y, z} = vector;
+  if (matrix instanceof Matrix4 && vector instanceof Vector4) {
+    const w = vector.w;
+    result.x = matElements[0] * x + matElements[1] * y + matElements[2] * z + matElements[3] * w;
+    result.y = matElements[4] * x + matElements[5] * y + matElements[6] * z + matElements[7] * w;
+    result.z = matElements[8] * x + matElements[9] * y + matElements[10] * z + matElements[11] * w;
+    (result as Vector4).w = matElements[12] * x + matElements[13] * y + matElements[14] * z + matElements[15] * w;
+  } else if (matrix instanceof Matrix3 && vector instanceof Vector3) {
+    result.x = matElements[0] * x + matElements[1] * y + matElements[2] * z;
+    result.y = matElements[3] * x + matElements[4] * y + matElements[5] * z;
+    result.z = matElements[6] * x + matElements[7] * y + matElements[8] * z;
+  } else {
+    throw new Error('Wrong parameters');
+  }
+  return result;
 };
